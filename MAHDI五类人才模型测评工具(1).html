@@ -1025,6 +1025,11 @@ function saveAssessmentResult(payload) {
   };
   results.push(record);
   writeResults(results);
+  fetch('/api/results', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(record)
+  }).catch(() => {});
   return record;
 }
 
@@ -1036,9 +1041,20 @@ function showInstructorDashboard() {
   show('s-instructor');
 }
 
-function renderInstructorDashboard() {
-  const results = readResults().slice().sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
-  const users = readUsers().filter(u => u.role === 'student');
+async function loadDashboardData() {
+  try {
+    const resp = await fetch('/api/instructor/results');
+    if (!resp.ok) throw new Error('backend unavailable');
+    return await resp.json();
+  } catch(e) {
+    return { results: readResults(), users: readUsers().filter(u => u.role === 'student'), offline: true };
+  }
+}
+
+async function renderInstructorDashboard() {
+  const dashboard = await loadDashboardData();
+  const results = (dashboard.results || []).slice().sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
+  const users = dashboard.users || readUsers().filter(u => u.role === 'student');
   const container = document.getElementById('instructorDashboard');
   const latest = results[0];
   const avgK = results.length ? Math.round(results.reduce((s,r)=>s+(r.kRate||0),0)/results.length) : 0;
@@ -1047,7 +1063,7 @@ function renderInstructorDashboard() {
   container.innerHTML = `<div class="instructor-top">
     <div>
       <div class="instructor-title">讲师数据看板</div>
-      <div class="instructor-sub">查看本浏览器中全部注册用户的 MAHDI 测评结果。当前为单页原型，本地存储；上线多人使用需接后端数据库。</div>
+      <div class="instructor-sub">查看全部学员提交到本地 SQLite 的 MAHDI 测评结果。若未启动 start.bat，则自动回退到浏览器本地记录。</div>
     </div>
     <div class="instructor-actions">
       <button class="topbar-btn" onclick="show('s-welcome')">返回首页</button>
