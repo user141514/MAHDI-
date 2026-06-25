@@ -1,0 +1,1124 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI智能力矩阵 · 人才定位测评</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --purple: #6C216D;
+  --purple-mid: #8B3D8C;
+  --purple-light: #F3E6F3;
+  --purple-xlight: #FAF3FA;
+  --orange: #E18C3F;
+  --orange-light: #FDF3E7;
+  --orange-xlight: #FFFAF4;
+  --text-primary: #1A1A2E;
+  --text-secondary: #555577;
+  --text-muted: #9999AA;
+  --bg: #FAFAFA;
+  --bg-card: #FFFFFF;
+  --border: #E8E0E8;
+  --border-light: #F0E8F0;
+  --success: #1A7A4A;
+  --success-bg: #EBF7F1;
+  --danger: #C0392B;
+  --danger-bg: #FDECEA;
+  --radius: 12px;
+  --radius-sm: 8px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body { font-family: 'Noto Sans SC', sans-serif; background: var(--bg); color: var(--text-primary); min-height: 100vh; font-size: 15px; line-height: 1.6; }
+.wrap { max-width: 760px; margin: 0 auto; padding: 0 20px 80px; }
+
+.topbar { background: var(--bg-card); border-bottom: 1px solid var(--border); padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; box-shadow: 0 1px 8px rgba(108,33,109,0.06); }
+.topbar-logo { display: flex; align-items: center; gap: 10px; }
+.logo-mark { width: 32px; height: 32px; border-radius: 8px; background: var(--purple); display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; color: #fff; }
+.logo-text { font-size: 13px; font-weight: 600; color: var(--purple); }
+.logo-sub { font-size: 11px; color: var(--text-muted); }
+.topbar-right { font-size: 12px; color: var(--text-muted); }
+.topbar-actions { display: flex; align-items: center; justify-content: flex-end; gap: 8px; flex-wrap: wrap; }
+.user-pill { display: none; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 100px; background: var(--purple-xlight); border: 1px solid rgba(108,33,109,0.18); color: var(--purple); font-size: 12px; font-weight: 600; }
+.user-pill.show { display: inline-flex; }
+.topbar-btn { border: 1px solid var(--border); background: var(--bg-card); color: var(--text-secondary); border-radius: 100px; padding: 6px 12px; font-size: 12px; font-weight: 600; font-family: inherit; cursor: pointer; transition: all .15s; }
+.topbar-btn:hover { border-color: var(--purple); color: var(--purple); background: var(--purple-xlight); }
+.topbar-btn.primary { background: var(--purple); border-color: var(--purple); color: #fff; }
+.topbar-btn.primary:hover { background: var(--purple-mid); color: #fff; }
+
+.hero { padding: 44px 0 32px; text-align: center; }
+.hero-eyebrow { display: inline-flex; align-items: center; gap: 6px; background: var(--purple-light); border: 1px solid rgba(108,33,109,0.2); border-radius: 100px; padding: 5px 14px; font-size: 12px; color: var(--purple); font-weight: 500; margin-bottom: 18px; }
+.hero-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--purple); }
+.hero h1 { font-size: 29px; font-weight: 700; line-height: 1.28; color: var(--text-primary); margin-bottom: 12px; }
+.hero h1 em { font-style: normal; color: var(--purple); }
+.hero p { font-size: 14px; color: var(--text-secondary); max-width: 500px; margin: 0 auto 16px; }
+.hero .principle { font-size: 12.5px; color: var(--text-muted); max-width: 480px; margin: 0 auto 26px; line-height: 1.7; background: var(--bg); border: 1px solid var(--border-light); border-radius: var(--radius-sm); padding: 10px 16px; }
+
+.type-row { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin-bottom: 28px; }
+.type-chip { display: flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 100px; font-size: 12px; font-weight: 500; border: 1px solid; }
+.chip-m { background: var(--purple-xlight); color: var(--purple); border-color: rgba(108,33,109,0.25); }
+.chip-a { background: var(--orange-xlight); color: var(--orange); border-color: rgba(225,140,63,0.3); }
+.chip-h { background: #EBF7F1; color: #1A7A4A; border-color: rgba(26,122,74,0.25); }
+.chip-d { background: #EAF2FB; color: #1A5276; border-color: rgba(26,82,118,0.25); }
+.chip-i { background: #FEF0E6; color: #884400; border-color: rgba(136,68,0,0.25); }
+.chip-letter { font-size: 15px; font-weight: 800; }
+
+.btn-start { background: var(--purple); color: #fff; padding: 14px 48px; border-radius: var(--radius); font-size: 15px; font-weight: 600; border: none; cursor: pointer; font-family: inherit; box-shadow: 0 4px 16px rgba(108,33,109,0.35); transition: all 0.2s; }
+.btn-start:hover { background: var(--purple-mid); transform: translateY(-1px); }
+
+.info-row { display: flex; justify-content: center; gap: 22px; margin-top: 16px; flex-wrap: wrap; }
+.info-item { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--text-muted); }
+.info-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--orange); }
+
+.progress-bar { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 20px; margin-bottom: 20px; display: none; }
+.progress-bar.show { display: block; }
+.pb-meta { display: flex; justify-content: space-between; margin-bottom: 8px; }
+.pb-label { font-size: 12px; color: var(--text-secondary); }
+.pb-pct { font-size: 12px; font-weight: 600; color: var(--purple); }
+.pb-track { height: 4px; background: var(--border-light); border-radius: 4px; overflow: hidden; }
+.pb-fill { height: 100%; background: linear-gradient(90deg, var(--purple), var(--orange)); border-radius: 4px; transition: width 0.4s ease; }
+.pb-group { font-size: 11px; color: var(--text-muted); margin-top: 6px; }
+
+.screen { display: none; }
+.screen.on { display: block; }
+@keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+.screen.on { animation: fadeUp 0.35s ease; }
+
+.q-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 16px; }
+.q-header { padding: 20px 24px; border-bottom: 1px solid var(--border-light); }
+.q-dim-tag { display: inline-block; padding: 3px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; letter-spacing: 0.03em; margin-bottom: 10px; }
+.q-text { font-size: 16px; font-weight: 600; color: var(--text-primary); line-height: 1.45; }
+.q-hint { font-size: 12px; color: var(--text-muted); margin-top: 6px; font-style: italic; }
+.q-options { padding: 8px 0; }
+.opt { display: flex; align-items: flex-start; gap: 12px; padding: 13px 24px; cursor: pointer; transition: all 0.15s; border-bottom: 1px solid var(--border-light); }
+.opt:last-child { border-bottom: none; }
+.opt:hover { background: var(--purple-xlight); }
+.opt.sel { background: var(--purple-light); }
+.opt-key { width: 24px; height: 24px; border-radius: 7px; flex-shrink: 0; background: var(--bg); border: 1.5px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--text-muted); margin-top: 1px; }
+.opt.sel .opt-key { background: var(--purple); border-color: var(--purple); color: #fff; }
+.opt-text { font-size: 14px; color: var(--text-secondary); line-height: 1.5; }
+.opt.sel .opt-text { color: var(--purple); font-weight: 500; }
+
+.nav-row { display: flex; justify-content: space-between; align-items: center; padding-bottom: 4px; }
+.btn-back { padding: 10px 20px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--bg-card); color: var(--text-muted); font-size: 13px; cursor: pointer; font-family: inherit; transition: all 0.15s; }
+.btn-back:hover { border-color: var(--purple); color: var(--purple); }
+.btn-next { padding: 10px 32px; border-radius: var(--radius-sm); background: var(--purple); color: #fff; font-size: 14px; font-weight: 500; border: none; cursor: pointer; font-family: inherit; transition: all 0.2s; }
+.btn-next:hover { background: var(--purple-mid); }
+.btn-next:disabled { background: #C8B8C8; cursor: not-allowed; }
+
+.calc-wrap { text-align: center; padding: 80px 0; }
+.calc-ring { width: 80px; height: 80px; border-radius: 50%; margin: 0 auto 24px; border: 3px solid var(--purple-light); border-top-color: var(--purple); border-right-color: var(--orange); animation: spin 1.2s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.calc-wrap h2 { font-size: 18px; font-weight: 600; color: var(--text-primary); margin-bottom: 6px; }
+.calc-wrap p { font-size: 13px; color: var(--text-muted); }
+.calc-steps { margin: 28px auto 0; max-width: 280px; text-align: left; display: flex; flex-direction: column; gap: 10px; }
+.cstep { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--text-muted); opacity: 0; transition: all 0.4s; }
+.cstep.done { opacity: 1; color: var(--text-secondary); }
+.cstep .cdot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); flex-shrink: 0; }
+.cstep.done .cdot { background: var(--success); }
+
+.result-banner { background: var(--purple-xlight); border: 1px solid var(--border-light); border-radius: var(--radius); padding: 14px 18px; margin-bottom: 16px; font-size: 12.5px; color: var(--text-secondary); line-height: 1.6; text-align: center; }
+.result-badge { display: inline-flex; align-items: center; gap: 6px; padding: 5px 14px; border-radius: 100px; font-size: 11px; font-weight: 600; margin-bottom: 16px; }
+
+.type-card { background: var(--bg-card); border-radius: var(--radius); border: 1.5px solid; padding: 24px; margin-bottom: 16px; position: relative; overflow: hidden; }
+.type-card-top { display: flex; align-items: flex-start; gap: 18px; }
+.type-avatar { width: 56px; height: 56px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 800; flex-shrink: 0; }
+.type-name { font-size: 22px; font-weight: 700; margin-bottom: 3px; }
+.type-en { font-size: 12px; color: var(--text-muted); margin-bottom: 8px; }
+.type-desc { font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
+.secondary-tag { display: inline-flex; align-items: center; gap: 5px; margin-top: 10px; padding: 3px 10px; border-radius: 6px; background: var(--bg); border: 1px solid var(--border); font-size: 12px; color: var(--text-muted); }
+.transform-bar { margin-top: 16px; padding: 10px 14px; background: var(--bg); border-radius: var(--radius-sm); font-size: 12px; color: var(--text-secondary); border-left: 3px solid var(--orange); }
+
+.scores-section { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; margin-bottom: 16px; }
+.sec-title { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); margin-bottom: 18px; font-weight: 600; }
+.radar-wrap { display: flex; align-items: flex-start; gap: 24px; flex-wrap: wrap; }
+.radar-chart { flex-shrink: 0; }
+.score-bars-col { flex: 1; min-width: 220px; display: flex; flex-direction: column; gap: 12px; padding-top: 4px; }
+.score-row { display: flex; align-items: center; gap: 10px; }
+.score-label { width: 88px; font-size: 12px; color: var(--text-secondary); flex-shrink: 0; display: flex; align-items: center; gap: 6px; }
+.score-letter { width: 20px; height: 20px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; flex-shrink: 0; }
+.score-track { flex: 1; height: 6px; background: var(--border-light); border-radius: 6px; overflow: hidden; }
+.score-fill { height: 100%; border-radius: 6px; transition: width 1s ease; width: 0; }
+.score-pct { font-size: 12px; font-weight: 600; width: 32px; text-align: right; flex-shrink: 0; }
+
+.level-section { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; margin-bottom: 16px; }
+.level-bar { display: flex; gap: 6px; margin-top: 14px; flex-wrap: wrap; }
+.level-step { flex: 1; min-width: 70px; padding: 10px 6px; border-radius: var(--radius-sm); text-align: center; border: 1px solid var(--border); font-size: 11px; color: var(--text-muted); }
+.level-step.done { border-color: rgba(26,122,74,0.3); background: var(--success-bg); color: var(--success); }
+.level-step.current { border-color: var(--purple); background: var(--purple-light); color: var(--purple); }
+.level-n { font-size: 18px; font-weight: 700; display: block; margin-bottom: 3px; }
+
+.path-section { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; margin-bottom: 16px; }
+.path-item { display: flex; gap: 14px; margin-bottom: 16px; align-items: flex-start; }
+.path-item:last-child { margin-bottom: 0; }
+.path-num { width: 26px; height: 26px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; margin-top: 2px; }
+.path-content h4 { font-size: 13px; font-weight: 600; margin-bottom: 3px; }
+.path-content p { font-size: 12px; color: var(--text-secondary); line-height: 1.55; }
+
+.learn-section { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; margin-bottom: 16px; }
+.learn-items { display: flex; flex-direction: column; gap: 7px; margin-top: 4px; }
+.learn-item { display: flex; align-items: center; gap: 10px; padding: 9px 14px; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 13px; color: var(--text-secondary); }
+.learn-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+
+.style-section { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; margin-bottom: 16px; }
+.style-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.style-row:last-child { margin-bottom: 0; }
+.style-name { width: 76px; font-size: 12px; color: var(--text-secondary); flex-shrink: 0; }
+.style-track { flex: 1; height: 6px; background: var(--border-light); border-radius: 6px; overflow: hidden; }
+.style-fill { height: 100%; border-radius: 6px; background: var(--purple); transition: width 1s ease; width: 0; }
+.style-pct { font-size: 12px; font-weight: 600; width: 32px; text-align: right; color: var(--purple); }
+.style-note { font-size: 12px; color: var(--text-muted); margin-top: 14px; line-height: 1.6; }
+
+.warn-section { background: var(--danger-bg); border: 1px solid rgba(192,57,43,0.2); border-radius: var(--radius); padding: 20px 24px; margin-bottom: 16px; }
+.warn-title { font-size: 13px; font-weight: 600; color: var(--danger); margin-bottom: 4px; }
+.warn-sub { font-size: 12px; color: rgba(192,57,43,0.7); margin-bottom: 10px; }
+.warn-tags { display: flex; flex-wrap: wrap; gap: 7px; }
+.warn-tag { padding: 4px 12px; background: rgba(192,57,43,0.1); border: 1px solid rgba(192,57,43,0.2); border-radius: 7px; font-size: 12px; color: var(--danger); }
+.no-warn { background: var(--success-bg); border: 1px solid rgba(26,122,74,0.2); border-radius: var(--radius); padding: 14px 20px; margin-bottom: 16px; font-size: 13px; color: var(--success); }
+
+.motto { background: linear-gradient(135deg, var(--purple-light), var(--orange-xlight)); border: 1px solid var(--border-light); border-radius: var(--radius); padding: 22px 24px; text-align: center; margin-bottom: 20px; }
+.motto p { font-size: 15px; color: var(--text-primary); line-height: 1.65; font-style: italic; font-weight: 500; }
+
+.btn-restart { width: 100%; padding: 14px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); color: var(--text-muted); font-size: 13px; cursor: pointer; font-family: inherit; transition: all 0.15s; text-align: center; }
+.btn-restart:hover { border-color: var(--purple); color: var(--purple); }
+
+.auth-card { max-width: 520px; margin: 40px auto 0; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 26px; box-shadow: 0 8px 28px rgba(108,33,109,0.08); }
+.auth-head { text-align: center; margin-bottom: 18px; }
+.auth-title { font-size: 22px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px; }
+.auth-sub { font-size: 12.5px; color: var(--text-muted); line-height: 1.7; }
+.auth-tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 18px; }
+.auth-tab { border: 1px solid var(--border); background: var(--bg); color: var(--text-secondary); border-radius: var(--radius-sm); padding: 9px 8px; font-size: 13px; font-weight: 600; font-family: inherit; cursor: pointer; }
+.auth-tab.active { background: var(--purple); border-color: var(--purple); color: #fff; }
+.auth-form { display: flex; flex-direction: column; gap: 12px; }
+.auth-field label { display: block; font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 5px; }
+.auth-field input { width: 100%; border: 1.5px solid var(--border); border-radius: var(--radius-sm); padding: 11px 12px; font-size: 14px; font-family: inherit; outline: none; color: var(--text-primary); background: #fff; }
+.auth-field input:focus { border-color: var(--purple); box-shadow: 0 0 0 3px rgba(108,33,109,0.08); }
+.auth-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.auth-submit { width: 100%; padding: 12px; border: none; border-radius: var(--radius-sm); background: var(--purple); color: #fff; font-size: 14px; font-weight: 700; font-family: inherit; cursor: pointer; margin-top: 4px; }
+.auth-submit:hover { background: var(--purple-mid); }
+.auth-note { background: var(--purple-xlight); border: 1px solid var(--border-light); border-radius: var(--radius-sm); padding: 10px 12px; font-size: 12px; color: var(--text-secondary); line-height: 1.7; }
+.auth-error { display: none; background: var(--danger-bg); border: 1px solid rgba(192,57,43,0.2); color: var(--danger); border-radius: var(--radius-sm); padding: 9px 12px; font-size: 12px; }
+.auth-error.show { display: block; }
+.instructor-card { max-width: 920px; margin: 26px auto 0; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; box-shadow: 0 8px 28px rgba(108,33,109,0.08); }
+.instructor-top { display: flex; justify-content: space-between; gap: 16px; align-items: flex-start; margin-bottom: 18px; flex-wrap: wrap; }
+.instructor-title { font-size: 22px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px; }
+.instructor-sub { font-size: 12.5px; color: var(--text-muted); }
+.instructor-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.dashboard-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 16px; }
+.dash-stat { background: var(--purple-xlight); border: 1px solid var(--border-light); border-radius: var(--radius-sm); padding: 12px; }
+.dash-num { font-size: 22px; font-weight: 800; color: var(--purple); line-height: 1; margin-bottom: 5px; }
+.dash-label { font-size: 12px; color: var(--text-muted); }
+.result-list { display: flex; flex-direction: column; gap: 12px; }
+.result-card { border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; background: #fff; }
+.result-card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; margin-bottom: 10px; }
+.result-user { font-size: 15px; font-weight: 700; color: var(--text-primary); }
+.result-meta { font-size: 12px; color: var(--text-muted); line-height: 1.7; margin-top: 3px; }
+.result-type { text-align: right; font-size: 12px; color: var(--text-secondary); }
+.result-type strong { display: block; font-size: 16px; margin-bottom: 2px; }
+.result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.mini-bars { display: flex; flex-direction: column; gap: 7px; }
+.mini-row { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-secondary); }
+.mini-label { width: 58px; flex-shrink: 0; }
+.mini-track { flex: 1; height: 6px; background: var(--border-light); border-radius: 8px; overflow: hidden; }
+.mini-fill { height: 100%; border-radius: 8px; }
+.result-detail { font-size: 12.5px; color: var(--text-secondary); line-height: 1.8; background: var(--bg); border: 1px solid var(--border-light); border-radius: var(--radius-sm); padding: 10px 12px; }
+.empty-state { text-align: center; padding: 38px 16px; color: var(--text-muted); border: 1px dashed var(--border); border-radius: var(--radius); background: var(--bg); }
+@media(max-width:700px){.topbar{align-items:flex-start;gap:12px;flex-direction:column}.topbar-actions{justify-content:flex-start}.auth-grid,.result-grid,.dashboard-stats{grid-template-columns:1fr}.auth-tabs{grid-template-columns:1fr}.result-type{text-align:left}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-logo">
+    <div class="logo-mark">M</div>
+    <div>
+      <div class="logo-text">美太咨询 MA&T</div>
+      <div class="logo-sub">Management Agent and Talent</div>
+    </div>
+  </div>
+  <div class="topbar-actions">
+    <span class="user-pill" id="userPill"></span>
+    <button class="topbar-btn primary" id="authBtn" onclick="showAuth('login')">登录 / 注册</button>
+    <button class="topbar-btn" id="instructorBtn" onclick="openInstructorEntry()">讲师入口</button>
+    <button class="topbar-btn" id="logoutBtn" onclick="logout()" style="display:none">退出</button>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="progress-bar" id="progBar">
+    <div class="pb-meta">
+      <span class="pb-label" id="pbLabel">第1题，共44题</span>
+      <span class="pb-pct" id="pbPct">0%</span>
+    </div>
+    <div class="pb-track"><div class="pb-fill" id="pbFill" style="width:0%"></div></div>
+    <div class="pb-group" id="pbGroup"></div>
+  </div>
+
+  <!-- Welcome -->
+  <div class="screen on" id="s-welcome">
+    <div class="hero">
+      <div class="hero-eyebrow"><span class="hero-dot"></span>MAHDI五类人才模型</div>
+      <h1>找到你在AI时代的<br><em>客观定位</em></h1>
+      <p>五维度44题测评，从经验经历、AI知识、兴趣倾向、学习方式、发展潜能全方位呈现你的特质，生成专属智能力矩阵报告</p>
+      <div class="principle">本测评不对任何人才类型或学习方式做优劣排序——五类人才同等重要，学习方式无好坏之分。测评的目的是帮助你更清晰地认识自己，而非评判高低。</div>
+      <div class="type-row">
+        <div class="type-chip chip-m"><span class="chip-letter">M</span>型领导者</div>
+        <div class="type-chip chip-a"><span class="chip-letter">A</span>I赋能者</div>
+        <div class="type-chip chip-h"><span class="chip-letter">H</span>型员工</div>
+        <div class="type-chip chip-d"><span class="chip-letter">D</span>数据管理者</div>
+        <div class="type-chip chip-i"><span class="chip-letter">I</span>型解题者</div>
+      </div>
+      <button class="btn-start" onclick="start()">开始测评 →</button>
+      <div class="info-row">
+        <div class="info-item"><span class="info-dot"></span>44道题目</div>
+        <div class="info-item"><span class="info-dot"></span>5个维度</div>
+        <div class="info-item"><span class="info-dot"></span>约10–15分钟</div>
+        <div class="info-item"><span class="info-dot"></span>即时生成报告</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Auth -->
+  <div class="screen" id="s-auth">
+    <div class="auth-card">
+      <div class="auth-head">
+        <div class="auth-title" id="authTitle">用户登录</div>
+        <div class="auth-sub" id="authSub">登录后开始测评，结果将自动归档，讲师可查看班级测评数据。</div>
+      </div>
+      <div class="auth-tabs">
+        <button class="auth-tab" id="tabLogin" onclick="switchAuth('login')">用户登录</button>
+        <button class="auth-tab" id="tabRegister" onclick="switchAuth('register')">用户注册</button>
+        <button class="auth-tab" id="tabInstructor" onclick="switchAuth('instructor')">讲师登录</button>
+      </div>
+      <div class="auth-error" id="authError"></div>
+      <div id="authBody"></div>
+    </div>
+  </div>
+
+  <!-- Instructor Dashboard -->
+  <div class="screen" id="s-instructor">
+    <div class="instructor-card" id="instructorDashboard"></div>
+  </div>
+
+  <!-- Question -->
+  <div class="screen" id="s-question">
+    <div class="q-card">
+      <div class="q-header">
+        <div class="q-dim-tag" id="qDimTag"></div>
+        <div class="q-text" id="qText"></div>
+        <div class="q-hint" id="qHint"></div>
+      </div>
+      <div class="q-options" id="qOpts"></div>
+    </div>
+    <div class="nav-row">
+      <button class="btn-back" id="btnBack" onclick="prevQ()">← 上一题</button>
+      <button class="btn-next" id="btnNext" onclick="nextQ()" disabled>下一题</button>
+    </div>
+  </div>
+
+  <!-- Calculating -->
+  <div class="screen" id="s-calc">
+    <div class="calc-wrap">
+      <div class="calc-ring"></div>
+      <h2>正在构建你的AI智能力矩阵</h2>
+      <p>五维度数据分析中，请稍候…</p>
+      <div class="calc-steps">
+        <div class="cstep" id="cs1"><div class="cdot"></div>经验经历维度分析…</div>
+        <div class="cstep" id="cs2"><div class="cdot"></div>AI专业知识评分…</div>
+        <div class="cstep" id="cs3"><div class="cdot"></div>兴趣倾向图谱构建…</div>
+        <div class="cstep" id="cs4"><div class="cdot"></div>学习风格特征识别…</div>
+        <div class="cstep" id="cs5"><div class="cdot"></div>发展潜能模型运算…</div>
+        <div class="cstep" id="cs6"><div class="cdot"></div>客观指标核验中…</div>
+        <div class="cstep" id="cs7"><div class="cdot"></div>生成个人专属报告…</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Result -->
+  <div class="screen" id="s-result"></div>
+
+</div>
+
+<script>
+const DIM_LABELS = { E:'经验经历', K:'AI专业知识', I:'兴趣倾向', L:'学习方式', P:'发展潜能' };
+const DIM_COLORS = { E:'#6C216D', K:'#E18C3F', I:'#1A7A4A', L:'#1A5276', P:'#884400' };
+
+const QUESTIONS = [
+// ===== GROUP E (10) — 经验经历，保持不变 =====
+{ dim:'E', q:'你目前或最近的岗位层级是？', hint:'判断M型领导者的第一道硬门槛', key:'E1',
+  opts:['基层执行岗，主要完成上级分配的任务','业务骨干，独立负责某个模块或项目','中层管理，有直接下属并参与跨部门协作','高层管理，参与战略决策并承担组织变革责任'],
+  sc:[{M:0,A:5,H:20,D:10,I:5},{M:5,A:8,H:15,D:15,I:15},{M:15,A:5,H:5,D:8,I:8},{M:22,A:3,H:0,D:5,I:8}]},
+{ dim:'E', q:'你管理过的最大团队规模是？', hint:'M型核心判据，带团队经历直接影响权重', key:'E2',
+  opts:['从未直接带过团队','带过3人以内的小组','带过5–15人的团队','带过15人以上的跨职能团队'],
+  sc:[{M:0,A:8,H:8,D:8,I:8},{M:5,A:8,H:5,D:5,I:5},{M:18,A:3,H:3,D:3,I:3},{M:25,A:0,H:0,D:0,I:0}]},
+{ dim:'E', q:'你在过去3年中，主导过以下哪类工作？（选最符合的一项）', hint:'考察实际工作内容与五类角色的匹配程度', key:'E3',
+  opts:['大量数据处理、报表生成、信息归档类工作','设计或优化某个业务流程/工具/系统','在某专业领域（法律/财务/技术/研究）提供专业判断','推动组织层面的变革项目（如流程再造、数字化转型）','内部培训、带教、知识分享'],
+  sc:[{M:0,A:3,H:10,D:12,I:0},{M:5,A:15,H:3,D:8,I:3},{M:3,A:5,H:3,D:3,I:20},{M:20,A:8,H:0,D:3,I:5},{M:8,A:18,H:5,D:5,I:8}]},
+{ dim:'E', q:'你的工作中，数据相关工作（整理/分析/治理）平均占比大约是？', hint:'数据管理者的关键判据', key:'E4',
+  opts:['10%以下，基本不涉及数据','10–30%，偶尔处理数据','30–60%，数据是日常核心工作之一','60%以上，数据管理是我的主要职责'],
+  sc:[{M:3,A:3,H:10,D:0,I:5},{M:5,A:5,H:8,D:8,I:8},{M:3,A:8,H:3,D:18,I:10},{M:0,A:3,H:0,D:28,I:3}]},
+{ dim:'E', q:'你是否有过在企业内部推广新工具/新方法/新流程的经历？', hint:'AI赋能者的典型经历特征', key:'E5',
+  opts:['没有，一般是接受别人推广的那个人','有过，但只在自己小组范围内','有，推广到了部门级别，多数人采用','有，跨部门推广并形成了标准化方案'],
+  sc:[{M:0,A:0,H:10,D:5,I:3},{M:3,A:8,H:5,D:5,I:5},{M:8,A:18,H:3,D:3,I:8},{M:12,A:25,H:0,D:3,I:5}]},
+{ dim:'E', q:'你在某一专业领域的从业年限？', hint:'I型解题者的专业积累判据', key:'E6',
+  opts:['3年以下，还在积累阶段','3–5年，有一定经验积累','5–10年，有较深的专业认知','10年以上，是所在领域的资深专家'],
+  sc:[{M:0,A:5,H:8,D:5,I:0},{M:3,A:5,H:5,D:8,I:8},{M:8,A:5,H:3,D:5,I:18},{M:5,A:3,H:0,D:3,I:28}]},
+{ dim:'E', q:'你是否有过被跨部门或跨团队主动咨询的经历？', hint:'考察"专家节点"属性，I型核心特征', key:'E7',
+  opts:['很少，大家主要在自己部门内解决问题','偶尔，主要是和我工作相关的问题','经常，各部门遇到复杂问题会来找我','非常频繁，我是公司某类问题的首选咨询对象'],
+  sc:[{M:0,A:3,H:10,D:5,I:0},{M:5,A:5,H:8,D:8,I:8},{M:8,A:8,H:3,D:5,I:18},{M:8,A:5,H:0,D:3,I:28}]},
+{ dim:'E', q:'你目前已实际使用AI工具的频率？', hint:'现有AI实践基础，影响能力层级判断', key:'E8',
+  opts:['几乎不用，还没开始尝试','偶尔用，主要用通用工具（如ChatGPT）','经常用，已经形成了固定的使用习惯','深度使用，已搭建或参与搭建AI工作流/知识库/智能体'],
+  sc:[{M:0,A:0,H:5,D:3,I:3},{M:3,A:3,H:8,D:5,I:5},{M:8,A:12,H:5,D:5,I:8},{M:8,A:22,H:0,D:10,I:8}]},
+{ dim:'E', q:'你参与过以下哪类AI相关项目？（选最符合的一项）', hint:'考察AI实战深度', key:'E9',
+  opts:['没有参与过AI项目','作为使用者，参与过AI工具应用推广','作为业务方，参与过AI工具的选型或需求定义','作为负责人，主导过AI系统的落地或迭代'],
+  sc:[{M:0,A:0,H:8,D:5,I:3},{M:3,A:8,H:8,D:5,I:5},{M:12,A:8,H:3,D:10,I:10},{M:15,A:15,H:0,D:12,I:8}]},
+{ dim:'E', q:'你是否有过在高度不确定情况下独立解决复杂问题的经历？', hint:'综合判断抗压性与复杂度处理能力', key:'E10',
+  opts:['很少，遇到复杂问题一般会上报或寻求支持','有过，在明确方向后能独立推进','经常，习惯在模糊中找到方向并推进','以此为常态，处理例外与复杂情况是我的核心工作'],
+  sc:[{M:0,A:3,H:8,D:5,I:3},{M:5,A:5,H:5,D:8,I:8},{M:12,A:8,H:3,D:5,I:15},{M:15,A:8,H:0,D:3,I:22}]},
+
+// ===== GROUP K (10) — AI专业知识，难度全面升级 =====
+{ dim:'K', q:'关于"上下文窗口"（Context Window），以下说法最准确的是？', hint:'认知层·模型机制理解', key:'K1', correct:1,
+  opts:['上下文窗口越大，模型生成内容的速度就会越快，质量保持不变','上下文窗口决定了模型单次处理信息的上限，超出部分会被截断或遗忘','上下文窗口的大小由用户的网络带宽和设备性能共同决定','上下文窗口是指模型可以记住的历史对话总轮数，没有字数限制'],
+  sc:[{},{M:5,A:8,H:3,D:5,I:5},{},{}]},
+{ dim:'K', q:'企业想让AI准确引用内部最新政策文件回答问题，又不希望频繁重新训练模型，最合适的技术路径是？', hint:'应用层·技术方案选型', key:'K2', correct:1,
+  opts:['持续做模型微调，将新政策数据反复加入训练，确保模型始终保持最新','使用检索增强生成技术，让模型实时检索外部知识库后再生成回答','把所有政策文件全部压缩后直接放进每一次的Prompt提示词中','持续等待模型厂商发布新版本，再统一更换到企业内部系统中'],
+  sc:[{},{M:5,A:15,H:0,D:10,I:0},{},{}]},
+{ dim:'K', q:'以下哪种说法准确描述了"Prompt注入"（Prompt Injection）攻击的风险？', hint:'安全层·风险识别（核心必备）', key:'K3', correct:0,
+  opts:['用户通过精心设计的输入，诱导AI忽略原有指令并执行非预期操作','用户长时间高频调用接口，导致AI服务器资源耗尽而响应迟缓','用户故意上传体积过大的文件，使AI在解析过程中发生异常崩溃','用户反复输入相同问题，导致AI因重复信息过载产生错误输出'],
+  sc:[{M:8,A:8,H:0,D:12,I:0},{},{},{}]},
+{ dim:'K', q:'某企业的AI客服在处理复杂投诉时表现不佳，已确认知识库内容完整准确。以下哪个原因最可能导致这一问题？', hint:'应用层·故障诊断能力', key:'K4', correct:1,
+  opts:['知识库收录的文档数量偏少，导致可检索的信息来源不够充分','检索环节召回的文档片段与用户实际问题不够相关，排序逻辑有缺陷','AI模型本身的参数规模偏小，导致理解能力天然存在上限','客户表达问题时用词较为口语化，增加了语义理解的难度'],
+  sc:[{},{M:0,A:15,H:0,D:10,I:0},{},{}]},
+{ dim:'K', q:'关于AI模型"参数量"与"性能"的关系，以下哪种描述最准确？', hint:'认知层·常见认知误区辨析', key:'K5', correct:2,
+  opts:['参数量越大，模型在所有任务上的表现就必然全面超越小模型','参数量的大小完全不影响模型表现，二者之间没有任何关联','参数量只是性能因素之一，模型表现还取决于数据质量与任务匹配度','参数量的大小只会改变模型的运行速度，不影响输出质量'],
+  sc:[{},{},{M:10,A:5,H:0,D:0,I:12},{}]},
+{ dim:'K', q:'在设计企业级AI应用的评估体系时，仅依赖"用户满意度评分"作为唯一指标，最大的风险是什么？', hint:'架构层·评估体系设计', key:'K6', correct:1,
+  opts:['满意度评分的统计过程过于繁琐，企业很难大规模收集数据','满意度评分容易受语气和格式等表层因素影响，未必反映真实质量','满意度评分这种主观指标无法被转化为可比较的数字结果','满意度评分这一指标只适用于消费者场景，不适合企业场景'],
+  sc:[{},{M:12,A:8,H:0,D:0,I:10},{},{}]},
+{ dim:'K', q:'以下关于AI模型"对齐"（Alignment）的描述，哪项最准确？', hint:'认知层·AI安全基础概念', key:'K7', correct:1,
+  opts:['对齐是指让AI生成内容的格式与企业内部模板保持高度统一','对齐是指通过技术手段让模型行为更符合人类意图，减少有害输出','对齐是指多个不同的AI模型之间相互协调、共同完成任务','对齐只是行业内的一种营销说法，并不对应具体技术内容'],
+  sc:[{},{M:8,A:8,H:3,D:8,I:5},{},{}]},
+{ dim:'K', q:'某团队发现，同样的Prompt在不同时间多次调用AI模型，得到的输出结果略有不同。以下哪个解释最合理？', hint:'认知层·模型行为机制', key:'K8', correct:1,
+  opts:['这种现象属于系统运行故障，应当立即联系技术团队报修','多数生成式AI在采样环节存在随机性，相同输入也可能产生不同输出','这说明该AI模型整体并不可靠，不适合用于企业正式场景','这种波动只会出现在质量较差的模型上，优质模型不会如此'],
+  sc:[{},{M:0,A:10,H:0,D:5,I:8},{},{}]},
+{ dim:'K', q:'企业评估是否采用某AI供应商的API服务时，以下哪项不属于需要重点关注的技术考量？', hint:'决策层·信息相关性判断（反向题）', key:'K9', correct:2,
+  opts:['数据是否会被用于模型再训练，是否具备数据隔离保障机制','API的响应延迟水平以及对并发请求的处理能力是否达标','该AI公司的核心创始人具体毕业于哪所院校或专业背景','模型版本的更新策略，以及新旧版本之间的向后兼容程度'],
+  sc:[{},{},{M:15,A:0,H:0,D:10,I:0},{}]},
+{ dim:'K', q:'企业用AI辅助生成财务分析报告，发现AI给出的某行业数据引用看似权威但无法找到出处。最恰当的应对方式是？', hint:'应用层·输出核验意识', key:'K10', correct:2,
+  opts:['AI给出的数字看起来很具体，大概率真实可信，可直接采用','要求AI重新确认一次，只要AI坚持原答案就可以放心采信','将这类数据视为待验证信息，通过权威渠道交叉核实后再采用','直接删除这部分内容，今后不再让AI参与任何数据类工作'],
+  sc:[{},{},{M:10,A:0,H:0,D:8,I:12},{}]},
+
+// ===== GROUP I (8) — 兴趣倾向，全部改为5选项中性平行结构 =====
+{ dim:'I', q:'如果公司给你一个月自由探索AI应用的机会，你最想做什么？', hint:'五个选项无优劣之分，请选择最吸引你的一项', key:'I1',
+  opts:['研究公司哪些业务流程最适合AI化，制定转型路线图','深入研究AI工具的底层逻辑，搭建一套完整的知识库或工作流','用AI提升现有工作效率，把省下的时间用在更有价值的事情上','系统整理和治理公司的数据资产，为AI应用打好基础','用AI辅助解决专业领域里最有挑战性的问题'],
+  sc:[{M:20},{A:20},{H:20},{D:20},{I:20}]},
+{ dim:'I', q:'在一个跨部门AI项目中，你更愿意承担哪种角色？', hint:'五个选项无优劣之分，请选择最吸引你的一项', key:'I2',
+  opts:['统筹大局的协调者，确保各方资源到位、项目顺利推进','深度钻研的技术者，专注把AI工具或系统打磨到位','一线落地的实践者，确保AI方案真正能在日常工作中用起来','数据把关的责任人，确保项目所依赖的数据准确可靠','复杂问题的攻坚者，负责处理项目中最难啃的专业难点'],
+  sc:[{M:20},{A:20},{H:20},{D:20},{I:20}]},
+{ dim:'I', q:'以下哪种工作场景最让你感到投入和专注？', hint:'五个选项无优劣之分，请选择最吸引你的一项', key:'I3',
+  opts:['带领团队讨论方向，凝聚共识、推动落地','独自钻研一个技术细节，直到完全弄懂、调试到位','和同事密切配合，把手头的事情高效完成','整理纷繁的信息和数据，把它们变得清晰有序','琢磨一个专业难题，从多个角度寻找最优解'],
+  sc:[{M:20},{A:20},{H:20},{D:20},{I:20}]},
+{ dim:'I', q:'当你完成一项工作并取得不错效果后，最让你有满足感的部分是？', hint:'五个选项无优劣之分，请选择最吸引你的一项', key:'I4',
+  opts:['这件事让团队整体往前推进了一大步','我把背后的方法或工具打磨得更顺手了','我自己腾出了更多精力去做别的事','这件事所依赖的信息和数据经得起检验','这是一个别人没解决好的难题，而我解决了'],
+  sc:[{M:20},{A:20},{H:20},{D:20},{I:20}]},
+{ dim:'I', q:'你更喜欢哪种类型的学习方式？', hint:'五个选项无优劣之分，请选择最吸引你的一项', key:'I5',
+  opts:['战略沙盘、案例研讨，讨论宏观趋势和组织策略','动手实操、工具拆解，一步步搭建出可用的成果','在真实工作场景中边用边学，解决具体问题','系统化课程学习，构建完整的知识体系','钻研专业案例与前沿动态，向纵深突破'],
+  sc:[{M:20},{A:20},{H:20},{D:20},{I:20}]},
+{ dim:'I', q:'你对以下哪类内容天然更感兴趣？', hint:'五个选项无优劣之分，请选择最吸引你的一项', key:'I6',
+  opts:['组织管理、领导力、战略规划','AI工具评测、Prompt技巧、智能体搭建','工作方法、效率工具、个人成长','数据治理、数据库、数据可视化','某一垂直领域的前沿知识与行业动态'],
+  sc:[{M:20},{A:20},{H:20},{D:20},{I:20}]},
+{ dim:'I', q:'当同事或朋友带着工作上的难题来找你商量时，你通常会？', hint:'五个选项无优劣之分，请选择最吸引你的一项', key:'I7',
+  opts:['帮他从整体上理一理方向，弄清楚轻重缓急','和他一起钻研背后的方法或工具，把解法搞透彻','先帮他把眼前的事情推进下去，让进度不卡住','帮他核查这件事依赖的信息或数据是否站得住脚','运用自己专业领域的积累，帮他从更深的角度想透'],
+  sc:[{M:20},{A:20},{H:20},{D:20},{I:20}]},
+{ dim:'I', q:'关于10年后的工作状态，以下哪种描述最符合你的期待？', hint:'五个选项无优劣之分，请选择最吸引你的一项', key:'I8',
+  opts:['我能站在更高的视角，统筹和指挥整个业务体系的运转','我深度参与并主导AI能力建设，团队的AI应用离不开我的设计','工作变得更顺手了，我能把更多精力放在人和事的连接上','我守护着一套扎实可靠的数据资产，支撑整套系统稳定运行','我在自己深耕的领域持续精进，让专业判断更有影响力'],
+  sc:[{M:20},{A:20},{H:20},{D:20},{I:20}]},
+
+// ===== GROUP L (8) — 学习方式，改为纯风格平行结构（社交/实践/结构/钻研） =====
+{ dim:'L', q:'当你接触一个从未用过的AI工具时，你的第一步通常是？', hint:'四种学习方式没有优劣之分，请选择最符合你习惯的一项', key:'L1',
+  opts:['先和熟悉这个工具的人交流，了解关键要点和使用心得','直接打开使用，在实际操作中摸索掌握','查阅官方教程或说明文档，按部就班地学习','先研究工具的设计逻辑或原理，再决定如何使用'],
+  sc:[{H:12,M:6},{A:12,H:6},{D:12,M:6},{I:12,A:6}]},
+{ dim:'L', q:'你在学习新知识时，倾向于用哪种方式来加深理解？', hint:'四种学习方式没有优劣之分，请选择最符合你习惯的一项', key:'L2',
+  opts:['和别人讨论交流，在对话中逐渐想清楚','反复实践演练，在动手中掌握','系统梳理笔记，整理成自己的知识框架','独立钻研琢磨，直到把底层逻辑想透'],
+  sc:[{H:12,M:6},{A:12,H:6},{D:12,M:6},{I:12,A:6}]},
+{ dim:'L', q:'过去一年，你了解AI相关内容时，更倾向于哪种方式？', hint:'四种学习方式没有优劣之分，请选择最符合你习惯的一项', key:'L3',
+  opts:['关注几个信任的人或机构，看他们的解读和观点','直接试用各种新出的AI工具，从使用中积累认知','看专业书籍或体系化课程，由浅入深建立框架','关注技术原理和行业本质，喜欢追根究底'],
+  sc:[{H:12,M:6},{A:12,H:6},{D:12,M:6},{I:12,A:6}]},
+{ dim:'L', q:'当你想尝试一种新的工作方法时，你通常会怎么做？', hint:'四种学习方式没有优劣之分，请选择最符合你习惯的一项', key:'L4',
+  opts:['先问问身边有经验的人，参考他们的做法','直接动手试一试，在实践中调整','先收集资料、做好计划，再按步骤执行','自己琢磨出一套方法，按自己的理解来推进'],
+  sc:[{H:12,M:6},{A:12,H:6},{D:12,M:6},{I:12,A:6}]},
+{ dim:'L', q:'当你遇到一时无法理解的内容时，你通常会怎么做？', hint:'四种学习方式没有优劣之分，请选择最符合你习惯的一项', key:'L5',
+  opts:['先放一放，之后请教懂的人帮你解释','换一个具体的实际案例，自己动手试试看','查阅更基础的资料，一步步搭建理解的台阶','反复琢磨，直到自己想清楚其中的逻辑'],
+  sc:[{H:12,M:6},{A:12,H:6},{D:12,M:6},{I:12,A:6}]},
+{ dim:'L', q:'在学习一个全新的复杂概念时，你的方式通常是？', hint:'四种学习方式没有优劣之分，请选择最符合你习惯的一项', key:'L6',
+  opts:['找身边懂这个领域的人，请他用简单的话讲给你听','找一个具体的应用场景，通过实际操作来理解','从基础知识开始，按照由浅入深的顺序学习','直接钻研最核心的原理或文献，从根源理解'],
+  sc:[{H:12,M:6},{A:12,H:6},{D:12,M:6},{I:12,A:6}]},
+{ dim:'L', q:'学习新知识时，你更倾向于通过哪种方式建立理解？', hint:'四种学习方式没有优劣之分，请选择最符合你习惯的一项', key:'L7',
+  opts:['类比身边人的经验或案例，从别人的故事中找参照','通过亲自试验操作，从结果中反推规律','对照已经学过的体系框架，把新知识归类放入','联系自己原有领域的经验，寻找跨领域的相通之处'],
+  sc:[{H:12,M:6},{A:12,H:6},{D:12,M:6},{I:12,A:6}]},
+{ dim:'L', q:'面对一场信息量很大的培训或讲座，你通常的应对方式是？', hint:'四种学习方式没有优劣之分，请选择最符合你习惯的一项', key:'L8',
+  opts:['全程参与讨论和提问，从交流中抓住重点','重点记录能马上用得上的内容，回去边用边消化','系统性地做笔记，搭建出整体框架','安静专注地听，在心里梳理逻辑脉络'],
+  sc:[{H:12,M:6},{A:12,H:6},{D:12,M:6},{I:12,A:6}]},
+
+// ===== GROUP P (8) — 发展潜能，保持不变 =====
+{ dim:'P', q:'当你面对一个没有标准答案的复杂问题时，你的第一反应是？', hint:'模糊容忍度，I型/M型核心潜能', key:'P1',
+  opts:['感到不安，希望先获得更多的指导和框架','把问题拆解成几个小问题，逐一分析','先快速形成一个初始假设，边验证边修正','把这个问题和过去的经验进行类比，找出底层规律'],
+  sc:[{M:0,A:3,H:8,D:5,I:3},{M:5,A:5,H:3,D:10,I:15},{M:12,A:15,H:3,D:5,I:8},{M:15,A:8,H:0,D:3,I:18}]},
+{ dim:'P', q:'你是否能够在信息不完整的情况下，做出高质量的判断和决策？', hint:'决策魄力，M型/I型核心潜能', key:'P2',
+  opts:['很难，我需要足够的信息才能做判断','勉强可以，但会非常谨慎','可以，我习惯在70%信息下做决策，并预设修正机制','这是我的强项，我擅长在模糊中快速判断并推进'],
+  sc:[{M:0,A:3,H:8,D:5,I:3},{M:3,A:3,H:5,D:8,I:5},{M:15,A:8,H:3,D:5,I:12},{M:22,A:8,H:0,D:3,I:15}]},
+{ dim:'P', q:'你在过去的工作中，是否有过主动发现并解决别人没有注意到的问题？', hint:'主动创造价值的能力', key:'P3',
+  opts:['很少，我主要处理被分配的任务','偶尔，但这不是我的习惯','经常，我会主动发现流程漏洞或机会点','几乎总是，我在任何情况下都在寻找可以改进的地方'],
+  sc:[{M:0,A:0,H:10,D:5,I:3},{M:3,A:3,H:8,D:5,I:5},{M:10,A:12,H:3,D:5,I:15},{M:18,A:15,H:0,D:5,I:12}]},
+{ dim:'P', q:'以下哪种描述最符合你面对变化时的状态？', hint:'变化适应力，AI时代核心素养', key:'P4',
+  opts:['倾向于维持稳定，变化让我感到不安','能接受变化，但需要一定的适应时间','对变化保持开放，能较快找到新的方向','主动拥抱变化，变化对我而言是机会而非威胁'],
+  sc:[{M:0,A:0,H:10,D:5,I:3},{M:3,A:3,H:5,D:8,I:5},{M:8,A:12,H:5,D:5,I:10},{M:18,A:15,H:0,D:3,I:8}]},
+{ dim:'P', q:'当你理解了一个新概念或方法后，你通常会？', hint:'知识转化与传播能力', key:'P5',
+  opts:['用于自己的工作就好，不太想对外分享','偶尔和身边同事聊聊','主动整理成文档或分享，让更多人受益','将其系统化，形成可复制的培训材料或工作手册'],
+  sc:[{M:0,A:0,H:8,D:5,I:10},{M:3,A:3,H:8,D:5,I:5},{M:10,A:18,H:3,D:3,I:5},{M:15,A:22,H:0,D:3,I:5}]},
+{ dim:'P', q:'在跨部门合作中，当各方意见出现分歧时，你通常扮演什么角色？', hint:'协调领导力，M型核心潜能', key:'P6',
+  opts:['保持中立，等待更高层做决定','支持我认为更合理的一方','尝试找到各方利益的共同点，推动形成共识','主导讨论，设定决策框架，推动达成可执行的结论'],
+  sc:[{M:0,A:3,H:8,D:5,I:5},{M:3,A:3,H:3,D:5,I:8},{M:15,A:10,H:3,D:3,I:5},{M:22,A:5,H:0,D:3,I:5}]},
+{ dim:'P', q:'如果让你从零开始设计一个新的业务流程，你的方法是？', hint:'系统构建能力', key:'P7',
+  opts:['参考现有的流程模板，适当修改','从问题出发，梳理关键环节，画出流程草图','先调研用户/业务需求，再系统设计，考虑异常路径','以终为始，先定最终产出标准，再逆向拆解每个环节'],
+  sc:[{M:0,A:3,H:8,D:5,I:3},{M:5,A:5,H:5,D:10,I:8},{M:8,A:12,H:3,D:5,I:15},{M:18,A:12,H:0,D:5,I:10}]},
+{ dim:'P', q:'对于自己5年后的发展，你的规划状态是？', hint:'目标清晰度与自驱力', key:'P8',
+  opts:['还没想好，走一步看一步','有大概方向，但没有具体计划','有明确目标，并制定了阶段性的行动计划','不仅有清晰规划，还会定期复盘进度并动态调整'],
+  sc:[{M:0,A:0,H:8,D:5,I:3},{M:3,A:3,H:5,D:5,I:5},{M:8,A:10,H:3,D:8,I:12},{M:18,A:10,H:0,D:5,I:12}]},
+];
+
+// fill missing keys with 0 for E5 score objects (K group sparse scoring)
+QUESTIONS.forEach(q=>{ q.sc = q.sc.map(s=>({M:s.M||0,A:s.A||0,H:s.H||0,D:s.D||0,I:s.I||0})); });
+
+const TYPE_INFO = {
+  M:{ name:'M型领导者', en:'M-shaped Leader', col:'#6C216D', bg:'#F3E6F3', bdr:'rgba(108,33,109,0.3)', avatarBg:'rgba(108,33,109,0.15)', avatarCol:'#6C216D',
+      desc:'你是AI时代组织变革的核心引领者，具备整合多领域资源、统筹AI战略落地的能力，能够推动团队从传统执行模式向人机协同模式转型，是企业AI转型的定向者与核心推动者。',
+      transform:'从经验决策 → AI驱动战略决策、组织变革管理、跨域资源统筹',
+      paths:[{t:'近期（1个月）',c:'完成AI通用底座学习，重点掌握绘制部门人机分工流程图、AI项目人效/成本测算方法'},{t:'中期（1–3个月）',c:'进入AI基础应用层：设计部门AI转型季度路径，学习组织变革阻力识别与应对话术'},{t:'远期（3–6个月）',c:'冲击AI专业深化层：主导AI项目全流程管控（需求→试点→复盘→推广），输出企业级AI战略'}],
+      learns:['识别企业可被AI替代的岗位/工作清单','用AI生成会议纪要与任务拆解、跟进清单','团队AI能力评估与成长路径规划','AI项目全流程管控：需求→试点→复盘→推广','企业AI治理体系：权限、合规、安全、迭代'] },
+  A:{ name:'AI赋能者', en:'AI Accomplisher', col:'#E18C3F', bg:'#FDF3E7', bdr:'rgba(225,140,63,0.35)', avatarBg:'rgba(225,140,63,0.15)', avatarCol:'#E18C3F',
+      desc:'你是企业AI工具的"训练师"与"优化师"，对AI有强烈的探索欲，已具备或有潜力具备业务知识库投喂、Prompt系统优化的能力，是连接AI能力与真实业务场景的关键节点。',
+      transform:'从普通工具使用者 → AI知识库投喂、指令优化、场景适配与模型调优',
+      paths:[{t:'近期（1个月）',c:'系统学习结构化Prompt设计与复用，完成首个业务场景的AI知识库搭建实操'},{t:'中期（1–3个月）',c:'完成业务知识库结构化整理，从0到1搭建企业专属AI智能体，并完成首次真实场景验证'},{t:'远期（3–6个月）',c:'建设企业10+可复用AI场景库，编制全员AI赋能标准化手册，成为内部AI推广核心负责人'}],
+      learns:['结构化Prompt设计：角色+任务+格式+示例+约束','AI知识库投喂实操：上传、校验、校准、生效','从0到1搭建企业专属AI智能体','业务场景AI微调与适配：垂直场景效果提升','企业级Prompt库搭建与持续维护'] },
+  H:{ name:'H型员工', en:'H-shaped Employee', col:'#1A7A4A', bg:'#EBF7F1', bdr:'rgba(26,122,74,0.3)', avatarBg:'rgba(26,122,74,0.15)', avatarCol:'#1A7A4A',
+      desc:'你是AI时代人机协同的一线高效执行者，核心价值在于情感连接与高价值人际互动。AI将大幅解放你的重复性工作，让你专注于AI无法替代的真正高价值工作。',
+      transform:'从重复劳动执行 → 高价值人际互动、岗位AI化执行、人机协同提效',
+      paths:[{t:'近期（1个月）',c:'梳理本岗位80%可AI替代重复工作清单，制定个人人机分工SOP，掌握万能Prompt框架'},{t:'中期（1–3个月）',c:'用AI自动生成日/周报、资料分类整理，实现日常工作效率显著提升（目标提效30%以上）'},{t:'远期（3–6个月）',c:'从0到1搭建个人岗位AI工作流，编制《个人AI提效手册》，可担任团队AI小教员'}],
+      learns:['万能Prompt框架：背景+任务+要求+格式+示例','用AI自动生成日报/周报/总结/话术','用AI做资料提取、分类、汇总、排版','高价值人际互动设计：AI执行，人做判断与情感沟通','从0到1搭建个人岗位AI工作流'] },
+  D:{ name:'数据管理者', en:'Data Driver', col:'#1A5276', bg:'#EAF2FB', bdr:'rgba(26,82,118,0.3)', avatarBg:'rgba(26,82,118,0.15)', avatarCol:'#1A5276',
+      desc:'你是AI时代数据资产的全周期管理者，对数据的价值定义、开发、整合与运维有专业敏感度，是企业AI模型训练的"燃料供应官"，保障AI系统稳定运行与持续迭代的关键人才。',
+      transform:'从基础数据处理 → 数据治理、数据价值定义、AI训练数据运维与资产管理',
+      paths:[{t:'近期（1个月）',c:'完成数据合规底座：掌握AI数据全流程（采集→清洗→标注→入库→使用），建立数据台账'},{t:'中期（1–3个月）',c:'完成数据整理与标注实操，掌握数据脱敏实操，用AI生成数据日报/周报看板'},{t:'远期（3–6个月）',c:'设计数据治理流程，构建AI训练数据供给体系，输出数据管理SOP与培训材料'}],
+      learns:['AI与数据关系：数据是AI系统的核心燃料','数据合规：隐私、脱敏、授权、留存、销毁全流程','AI训练数据标注规范与质量校验方法','建立数据台账：来源、时间、用途、负责人','数据治理流程设计：采集→清洗→校验→更新→退出'] },
+  I:{ name:'I型解题者', en:'Innovative Solver', col:'#884400', bg:'#FEF0E6', bdr:'rgba(136,68,0,0.3)', avatarBg:'rgba(136,68,0,0.15)', avatarCol:'#884400',
+      desc:'你是AI时代处理复杂例外问题的核心专家，在某一专业领域的深厚积累让你成为组织的"深度判断节点"，AI将大幅放大你的专业影响力，帮你突破知识获取和方案输出的瓶颈。',
+      transform:'从单一领域专家 → 复杂问题AI化拆解、跨域协同、例外问题深度解决',
+      paths:[{t:'近期（1个月）',c:'掌握AI能力边界认知，学习复杂问题AI化拆解逻辑（结构、原因、影响、方案四维框架）'},{t:'中期（1–3个月）',c:'用AI辅助专业知识检索与方案框架生成，搭建个人专业领域AI知识库并完成首次调用'},{t:'远期（3–6个月）',c:'设计例外问题AI化解决路径，输出领域AI解题方法论，参与企业AI专业场景规划'}],
+      learns:['AI能力边界：能解决/不能解决的清晰区分','用AI拆解复杂问题：结构、原因、影响、方案','用AI检索并总结专业知识、案例、法规','个人专业知识库搭建与AI调用方法','例外问题AI化解决路径设计'] },
+};
+
+const LEVEL_INFO = [
+  { l:'AI通用底座', d:'尚未建立AI基础认知，需优先完成全员必修模块' },
+  { l:'AI基础应用', d:'具备基本AI工具使用能力，可进入岗位专属学习路径' },
+  { l:'AI专业深化', d:'能系统应用AI，可承担内部场景优化与赋能任务' },
+  { l:'AI体系创新', d:'具备构建AI体系能力，可担任赋能者或领导者角色' },
+];
+
+const STYLE_INFO = {
+  social:{ name:'社交型', desc:'倾向于通过与他人交流、请教来学习，善于在对话中获得启发' },
+  practice:{ name:'实践型', desc:'倾向于直接动手操作、在实践中摸索，从结果中积累经验' },
+  structure:{ name:'结构型', desc:'倾向于系统化、按步骤学习，喜欢先建立完整框架再深入' },
+  research:{ name:'钻研型', desc:'倾向于独立钻研、追根究底，喜欢从原理和本质理解问题' },
+};
+
+// ===================== STATE =====================
+let cur = 0, answers = {}, authMode = 'login';
+const AUTH_USERS_KEY = 'mahid_users_v1';
+const AUTH_SESSION_KEY = 'mahid_session_v1';
+const AUTH_RESULTS_KEY = 'mahid_results_v1';
+const DEFAULT_INSTRUCTOR = { email:'teacher', password:'meitai123456', displayName:'讲师' };
+ensureInstructorAccount();
+renderTopbar();
+
+function getDimMax(dim) {
+  const qs = QUESTIONS.filter(q=>q.dim===dim);
+  const mx = {M:0,A:0,H:0,D:0,I:0};
+  qs.forEach(q => { ['M','A','H','D','I'].forEach(t => { mx[t] += Math.max(...q.sc.map(s=>s[t])); }); });
+  return mx;
+}
+
+function show(id) { document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on')); document.getElementById(id).classList.add('on'); }
+
+function readJson(key, fallback) { try { return JSON.parse(localStorage.getItem(key) || ''); } catch(e) { return fallback; } }
+function writeJson(key, value) { localStorage.setItem(key, JSON.stringify(value)); }
+function nowId(prefix) { return `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2,8)}`; }
+function encodeText(value) { return btoa(unescape(encodeURIComponent(String(value || '')))); }
+function hashPassword(password) { return `local:${encodeText(password)}`; }
+function verifyPassword(password, stored) { return stored === hashPassword(password) || stored === password; }
+function readUsers() { return readJson(AUTH_USERS_KEY, []); }
+function writeUsers(users) { writeJson(AUTH_USERS_KEY, users); }
+function readResults() { return readJson(AUTH_RESULTS_KEY, []); }
+function writeResults(results) { writeJson(AUTH_RESULTS_KEY, results); }
+function currentSession() { return readJson(AUTH_SESSION_KEY, null); }
+function currentUser() { const s=currentSession(); if(!s) return null; return readUsers().find(u=>u.id===s.userId) || null; }
+function setSession(user) { writeJson(AUTH_SESSION_KEY, { userId:user.id, role:user.role, loginAt:new Date().toISOString() }); renderTopbar(); }
+
+function ensureInstructorAccount() {
+  const users = readUsers();
+  if (!users.some(u => u.role === 'instructor' && u.email === DEFAULT_INSTRUCTOR.email)) {
+    users.push({ id:'teacher', email:DEFAULT_INSTRUCTOR.email, passwordHash:hashPassword(DEFAULT_INSTRUCTOR.password), displayName:DEFAULT_INSTRUCTOR.displayName, companyName:'美太咨询', jobTitle:'讲师', role:'instructor', createdAt:new Date().toISOString() });
+    writeUsers(users);
+  }
+}
+
+function renderTopbar() {
+  const user = currentUser();
+  const pill = document.getElementById('userPill');
+  const authBtn = document.getElementById('authBtn');
+  const instructorBtn = document.getElementById('instructorBtn');
+  const logoutBtn = document.getElementById('logoutBtn');
+  if (!pill || !authBtn || !instructorBtn || !logoutBtn) return;
+  if (!user) {
+    pill.classList.remove('show');
+    authBtn.style.display = 'inline-block';
+    instructorBtn.textContent = '讲师入口';
+    logoutBtn.style.display = 'none';
+    return;
+  }
+  pill.textContent = `${user.role === 'instructor' ? '讲师' : '用户'}：${user.displayName || user.email}`;
+  pill.classList.add('show');
+  authBtn.style.display = 'none';
+  instructorBtn.textContent = user.role === 'instructor' ? '数据看板' : '讲师入口';
+  logoutBtn.style.display = 'inline-block';
+}
+
+function showAuth(mode='login') {
+  authMode = mode;
+  document.getElementById('progBar').classList.remove('show');
+  renderAuthForm();
+  show('s-auth');
+}
+function switchAuth(mode) { authMode = mode; renderAuthForm(); }
+function showAuthError(message) { const box=document.getElementById('authError'); box.textContent=message; box.classList.add('show'); }
+function clearAuthError() { const box=document.getElementById('authError'); box.textContent=''; box.classList.remove('show'); }
+
+function renderAuthForm() {
+  clearAuthError();
+  const titleMap = { login:'用户登录', register:'用户注册', instructor:'讲师登录' };
+  const subMap = {
+    login:'登录后开始测评，结果将自动归档到你的账号下。',
+    register:'注册普通用户账号后，提交的测评结果可被讲师端统一查看。',
+    instructor:'讲师账号沿用 demo 项目逻辑：teacher / meitai123456。'
+  };
+  document.getElementById('authTitle').textContent = titleMap[authMode];
+  document.getElementById('authSub').textContent = subMap[authMode];
+  ['Login','Register','Instructor'].forEach(k => document.getElementById('tab'+k).classList.remove('active'));
+  document.getElementById(authMode === 'login' ? 'tabLogin' : authMode === 'register' ? 'tabRegister' : 'tabInstructor').classList.add('active');
+  const isRegister = authMode === 'register';
+  const isInstructor = authMode === 'instructor';
+  const emailValue = isInstructor ? DEFAULT_INSTRUCTOR.email : '';
+  const body = document.getElementById('authBody');
+  body.innerHTML = `<div class="auth-form">
+    ${isRegister ? `<div class="auth-grid"><div class="auth-field"><label>姓名</label><input id="authName" autocomplete="name" placeholder="请输入姓名"></div><div class="auth-field"><label>公司</label><input id="authCompany" placeholder="请输入公司/组织"></div></div><div class="auth-field"><label>岗位</label><input id="authJob" placeholder="请输入岗位/职务"></div>` : ''}
+    <div class="auth-field"><label>${isInstructor ? '讲师账号' : '邮箱/账号'}</label><input id="authEmail" autocomplete="username" value="${emailValue}" placeholder="${isInstructor ? 'teacher' : '请输入邮箱或账号'}"></div>
+    <div class="auth-field"><label>密码</label><input id="authPassword" type="password" autocomplete="current-password" placeholder="${isInstructor ? '默认密码：meitai123456' : '请输入密码'}" onkeydown="if(event.key==='Enter')handleAuthSubmit()"></div>
+    ${isInstructor ? `<div class="auth-note">默认讲师账号：<strong>teacher</strong>，默认密码：<strong>meitai123456</strong>。讲师可以查看本浏览器中所有用户提交的测评结果。</div>` : ''}
+    <button class="auth-submit" onclick="handleAuthSubmit()">${isRegister ? '注册并登录' : '登录'}</button>
+  </div>`;
+}
+
+function handleAuthSubmit() {
+  clearAuthError();
+  const email = (document.getElementById('authEmail')?.value || '').trim();
+  const password = (document.getElementById('authPassword')?.value || '').trim();
+  if (!email || !password) { showAuthError('请输入账号和密码。'); return; }
+  const users = readUsers();
+  if (authMode === 'register') {
+    const displayName = (document.getElementById('authName')?.value || '').trim();
+    const companyName = (document.getElementById('authCompany')?.value || '').trim();
+    const jobTitle = (document.getElementById('authJob')?.value || '').trim();
+    if (!displayName || !companyName || !jobTitle) { showAuthError('请补全姓名、公司和岗位。'); return; }
+    if (password.length < 6) { showAuthError('密码至少需要 6 位。'); return; }
+    if (users.some(u => u.email.toLowerCase() === email.toLowerCase())) { showAuthError('该账号已被注册。'); return; }
+    const user = { id:nowId('user'), email, passwordHash:hashPassword(password), displayName, companyName, jobTitle, role:'student', createdAt:new Date().toISOString() };
+    users.push(user); writeUsers(users); setSession(user); show('s-welcome'); return;
+  }
+  const expectedRole = authMode === 'instructor' ? 'instructor' : 'student';
+  const user = users.find(u => u.email.toLowerCase() === email.toLowerCase() && u.role === expectedRole);
+  if (!user || !verifyPassword(password, user.passwordHash)) { showAuthError('账号或密码错误。'); return; }
+  setSession(user);
+  if (user.role === 'instructor') showInstructorDashboard(); else show('s-welcome');
+}
+
+function logout() {
+  localStorage.removeItem(AUTH_SESSION_KEY);
+  cur=0; answers={};
+  document.getElementById('progBar').classList.remove('show');
+  renderTopbar();
+  show('s-welcome');
+}
+
+function requireStudentSession() {
+  const user = currentUser();
+  if (!user) { showAuth('login'); return false; }
+  if (user.role === 'instructor') { alert('讲师账号用于查看数据看板，不能填写用户测评。'); showInstructorDashboard(); return false; }
+  return true;
+}
+
+function openInstructorEntry() {
+  const user = currentUser();
+  if (user && user.role === 'instructor') showInstructorDashboard();
+  else showAuth('instructor');
+}
+
+function start() {
+  if (!requireStudentSession()) return;
+  show('s-question'); document.getElementById('progBar').classList.add('show'); renderQ();
+}
+
+function hexToRgba(hex, alpha) {
+  const r=parseInt(hex.slice(1,3),16), g=parseInt(hex.slice(3,5),16), b=parseInt(hex.slice(5,7),16);
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
+function renderQ() {
+  const q = QUESTIONS[cur];
+  const tag = document.getElementById('qDimTag');
+  tag.textContent = `${q.dim} · ${DIM_LABELS[q.dim]}  ·  第${cur+1}题 / 共44题`;
+  tag.style.background = hexToRgba(DIM_COLORS[q.dim], 0.12);
+  tag.style.color = DIM_COLORS[q.dim];
+  document.getElementById('qText').textContent = q.q;
+  document.getElementById('qHint').textContent = q.hint;
+
+  const container = document.getElementById('qOpts');
+  container.innerHTML = '';
+  const letters = ['A','B','C','D','E'];
+  q.opts.forEach((opt, i) => {
+    const el = document.createElement('div');
+    el.className = 'opt' + (answers[cur]===i?' sel':'');
+    el.innerHTML = `<div class="opt-key">${letters[i]}</div><div class="opt-text">${opt}</div>`;
+    el.onclick = () => selectOpt(i);
+    container.appendChild(el);
+  });
+
+  document.getElementById('btnNext').disabled = answers[cur]===undefined;
+  document.getElementById('btnBack').style.visibility = cur===0?'hidden':'visible';
+  document.getElementById('btnNext').textContent = cur===QUESTIONS.length-1?'提交测评':'下一题';
+  updateProg();
+}
+
+function selectOpt(i) {
+  answers[cur] = i;
+  document.querySelectorAll('.opt').forEach((el,idx) => { el.classList.toggle('sel', idx===i); });
+  document.getElementById('btnNext').disabled = false;
+}
+
+function updateProg() {
+  const pct = Math.round((cur/QUESTIONS.length)*100);
+  document.getElementById('pbFill').style.width = pct+'%';
+  document.getElementById('pbLabel').textContent = `第${cur+1}题，共${QUESTIONS.length}题`;
+  document.getElementById('pbPct').textContent = pct+'%';
+  document.getElementById('pbGroup').textContent = `当前维度：${DIM_LABELS[QUESTIONS[cur].dim]}`;
+}
+
+function nextQ() {
+  if (answers[cur]===undefined) return;
+  if (cur < QUESTIONS.length-1) { cur++; renderQ(); }
+  else { compute(); }
+}
+function prevQ() { if(cur>0){cur--;renderQ();} }
+
+// ===================== COMPUTE =====================
+function compute() {
+  show('s-calc');
+  document.getElementById('progBar').classList.remove('show');
+  ['cs1','cs2','cs3','cs4','cs5','cs6','cs7'].forEach((id,i)=>{ setTimeout(()=>document.getElementById(id).classList.add('done'),(i+1)*480); });
+
+  const raw = { E:{M:0,A:0,H:0,D:0,I:0}, K:{M:0,A:0,H:0,D:0,I:0}, I:{M:0,A:0,H:0,D:0,I:0}, L:{M:0,A:0,H:0,D:0,I:0}, P:{M:0,A:0,H:0,D:0,I:0} };
+  const weights = { E:0.25, K:0.20, I:0.20, L:0.20, P:0.15 };
+
+  QUESTIONS.forEach((q,qi)=>{
+    if(answers[qi]!==undefined){
+      const sc = q.sc[answers[qi]];
+      ['M','A','H','D','I'].forEach(t=>{ raw[q.dim][t]+=sc[t]; });
+    }
+  });
+
+  const final = {M:0,A:0,H:0,D:0,I:0};
+  const dimNorm = {};
+  Object.keys(weights).forEach(dim=>{
+    const mx = getDimMax(dim);
+    dimNorm[dim] = {};
+    ['M','A','H','D','I'].forEach(t=>{
+      const norm = mx[t]>0 ? Math.round((raw[dim][t]/mx[t])*100) : 0;
+      dimNorm[dim][t] = norm;
+      final[t] += norm * weights[dim];
+    });
+  });
+  ['M','A','H','D','I'].forEach(t=>{ final[t]=Math.round(final[t]); });
+
+  // K group correct rate (harder bank, recalibrated level thresholds)
+  const kQs = QUESTIONS.filter(q=>q.dim==='K');
+  let kCorrect = 0;
+  kQs.forEach((q)=>{ const qi=QUESTIONS.indexOf(q); if(answers[qi]===q.correct) kCorrect++; });
+  const kRate = kCorrect/kQs.length;
+  const e8i = QUESTIONS.findIndex(q=>q.key==='E8'); const e8ans = answers[e8i];
+  let level = 1;
+  if(kRate>0.7 && e8ans>=3) level=4;
+  else if(kRate>0.5 && e8ans>=2) level=3;
+  else if(kRate>0.25 && e8ans>=1) level=2;
+
+  // ===== Learning style profile (L group, style-only, no hierarchy) =====
+  const lQs = QUESTIONS.filter(q=>q.dim==='L');
+  const styleRaw = {social:0, practice:0, structure:0, research:0};
+  const styleMax = lQs.length * 12;
+  lQs.forEach(q=>{
+    const qi = QUESTIONS.indexOf(q);
+    const ai = answers[qi];
+    if(ai===0) styleRaw.social+=12;
+    else if(ai===1) styleRaw.practice+=12;
+    else if(ai===2) styleRaw.structure+=12;
+    else if(ai===3) styleRaw.research+=12;
+  });
+  const stylePct = {};
+  Object.keys(styleRaw).forEach(k=>{ stylePct[k]=Math.round((styleRaw[k]/styleMax)*100); });
+
+  // ===== Warnings (rebuilt to match new K-group content; I-group no longer signals "engagement level") =====
+  const warns = [];
+  const k3i = QUESTIONS.findIndex(q=>q.key==='K3');
+  if(answers[k3i]!==QUESTIONS[k3i].correct) warns.push({ code:'W01', name:'AI安全风险意识不足', desc:'Prompt注入风险判断题未答对，建议补充AI安全基础认知，了解常见的输入操控风险' });
+
+  const k1i=QUESTIONS.findIndex(q=>q.key==='K1'), k7i=QUESTIONS.findIndex(q=>q.key==='K7'), k8i=QUESTIONS.findIndex(q=>q.key==='K8');
+  const basicWrong=[k1i,k7i,k8i].filter(i=>answers[i]!==QUESTIONS[i].correct).length;
+  if(basicWrong>=2) warns.push({ code:'W02', name:'AI基础认知有待补强', desc:'模型机制类基础题正确率较低，建议从AI通用底座模块开始系统学习' });
+
+  const sorted0 = Object.entries(final).sort((a,b)=>b[1]-a[1]);
+  const mainType0 = sorted0[0][0];
+  const e2i=QUESTIONS.findIndex(q=>q.key==='E2'), e2ans=answers[e2i];
+  if(mainType0==='M' && e2ans<2) warns.push({ code:'W03', name:'管理经验积累较少', desc:'当前定位为M型领导者，但团队管理经验尚浅，建议先积累跨职能项目协调经验' });
+
+  const e6i=QUESTIONS.findIndex(q=>q.key==='E6'), e6ans=answers[e6i];
+  if(mainType0==='I' && e6ans<1) warns.push({ code:'W04', name:'专业积累有待加深', desc:'当前定位为I型解题者，但专业领域从业年限较短，建议先持续积累专业深度' });
+
+  const k10i = QUESTIONS.findIndex(q=>q.key==='K10');
+  if(answers[k10i]!==QUESTIONS[k10i].correct) warns.push({ code:'W05', name:'AI输出核验习惯待建立', desc:'对AI生成内容的真实性核验意识不足，建议建立"先核实、再采用"的工作习惯' });
+
+  const e4i=QUESTIONS.findIndex(q=>q.key==='E4'), e4ans=answers[e4i];
+  const k3wrong = answers[k3i]!==QUESTIONS[k3i].correct, k10wrong = answers[k10i]!==QUESTIONS[k10i].correct;
+  if(e4ans>=2 && (k3wrong || k10wrong)) warns.push({ code:'W06', name:'数据相关工作的风险组合', desc:'数据工作占比较高，同时在安全或核验意识上存在短板，建议优先补强此方向' });
+
+  const pQs = QUESTIONS.filter(q=>q.dim==='P');
+  let pLowCount = 0;
+  pQs.forEach(q=>{ const qi=QUESTIONS.indexOf(q); if(answers[qi]===0) pLowCount++; });
+  if(pLowCount>=4) warns.push({ code:'W07', name:'发展潜能题答题偏谨慎', desc:'在多道情境题中倾向选择较为保守的选项，如果你希望承担更多挑战，可主动寻求相关历练机会' });
+
+  setTimeout(()=>showResult(final, dimNorm, sorted0, level, warns, kRate, stylePct), 3800);
+}
+
+// ===================== RADAR CHART =====================
+function drawRadar(scores5d) {
+  const size=220, cx=110, cy=110, r=80;
+  const dims=['E','K','I','L','P'];
+  const labels=['经验经历','AI知识','兴趣倾向','学习方式','发展潜能'];
+  const angles=dims.map((_,i)=>((i*72)-90)*Math.PI/180);
+  const vals=dims.map(d=>{ const s=scores5d[d]; const mx=Math.max(...Object.values(s)); return mx/100; });
+  function pt(angle,frac,rr){return{x:cx+rr*frac*Math.cos(angle),y:cy+rr*frac*Math.sin(angle)};}
+
+  let grid='';
+  [0.25,0.5,0.75,1].forEach(f=>{
+    const pts=angles.map(a=>pt(a,f,r));
+    grid+=`<polygon points="${pts.map(p=>`${p.x},${p.y}`).join(' ')}" fill="none" stroke="#E8E0E8" stroke-width="0.5"/>`;
+  });
+  let axes='';
+  angles.forEach(a=>{const p=pt(a,1,r);axes+=`<line x1="${cx}" y1="${cy}" x2="${p.x}" y2="${p.y}" stroke="#E8E0E8" stroke-width="0.5"/>`;});
+  const dataPts=angles.map((a,i)=>pt(a,vals[i],r));
+  const polyStr=dataPts.map(p=>`${p.x},${p.y}`).join(' ');
+
+  let lbls='';
+  angles.forEach((a,i)=>{
+    const lp=pt(a,1.28,r);
+    const pct=Math.round(vals[i]*100);
+    lbls+=`<text x="${lp.x}" y="${lp.y}" text-anchor="middle" dominant-baseline="middle" font-size="9" fill="#555577" font-family="'Noto Sans SC',sans-serif">${labels[i]}</text>`;
+    lbls+=`<text x="${lp.x}" y="${lp.y+11}" text-anchor="middle" dominant-baseline="middle" font-size="8" fill="#6C216D" font-weight="600" font-family="'Noto Sans SC',sans-serif">${pct}%</text>`;
+  });
+  let dots='';
+  dataPts.forEach(p=>{dots+=`<circle cx="${p.x}" cy="${p.y}" r="3" fill="#6C216D"/>`;});
+
+  return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg">
+    ${grid}${axes}
+    <polygon points="${polyStr}" fill="rgba(108,33,109,0.12)" stroke="#6C216D" stroke-width="1.5"/>
+    ${dots}${lbls}
+  </svg>`;
+}
+
+// ===================== RESULT =====================
+function showResult(final, dimNorm, sorted, level, warns, kRate, stylePct) {
+  const mainType = sorted[0][0];
+  const secondType = sorted[1][0];
+  const info = TYPE_INFO[mainType];
+  const sInfo = TYPE_INFO[secondType];
+  const gap = sorted[0][1] - sorted[1][1];
+  const isDouble = gap <= 10;
+
+  const total = Object.values(final).reduce((a,b)=>a+b,0);
+  const pcts = {}; Object.keys(final).forEach(k=>{ pcts[k]=Math.round((final[k]/total)*100); });
+
+  const radarSVG = drawRadar(dimNorm);
+
+  const mottos = {
+    M:'用你的战略视野 × AI的执行效率，你将成为推动组织AI转型最不可缺少的掌舵人。',
+    A:'用你对AI的深度理解 × 业务场景洞察，你将成为企业最稀缺的AI赋能核心。',
+    H:'用你无可替代的情感连接 × AI释放出的时间，你将在真正高价值的工作中大放异彩。',
+    D:'用你对数据的专业敏感度 × AI的智能处理能力，你将成为企业AI燃料的关键守护者。',
+    I:'用你的专业深度 × AI的执行效率，你将成为组织里处理最复杂问题的核心专家。'
+  };
+
+  const styleSorted = Object.entries(stylePct).sort((a,b)=>b[1]-a[1]);
+  const topStyle = styleSorted[0][0];
+  const savedRecord = saveAssessmentResult({ final, pcts, dimNorm, sorted, mainType, secondType, level, warns, kRate, stylePct, topStyle, isDouble });
+
+  const warnHTML = warns.length > 0 ? `
+    <div class="warn-section">
+      <div class="warn-title">需要关注的方向（${warns.length}项）</div>
+      <div class="warn-sub">以下为基于客观行为与知识测试得出的提示，仅供参考，不代表整体能力评判</div>
+      <div class="warn-tags">${warns.map(w=>`<div class="warn-tag">${w.code} ${w.name}</div>`).join('')}</div>
+      ${warns.map(w=>`<div style="font-size:12px;color:var(--danger);margin-top:8px;padding:6px 0;border-top:1px solid rgba(192,57,43,0.1)"><strong>${w.name}：</strong>${w.desc}</div>`).join('')}
+    </div>` : `<div class="no-warn">✓ 未发现需要特别关注的方向，可按建议路径稳步推进。</div>`;
+
+  document.getElementById('s-result').innerHTML = `
+    <div style="padding-top:8px">
+      <div class="result-banner">五维度评估结果不代表能力高低排序，仅反映你当前的特质组合与倾向方向，可作为自我认知和发展规划的参考。</div>
+      <div style="text-align:center;margin-bottom:16px">
+        <div class="result-badge" style="background:${info.bg};border:1px solid ${info.bdr};color:${info.col}">
+          测评完成 · AI智能力矩阵报告
+        </div>
+      </div>
+
+      <div class="type-card" style="border-color:${info.bdr}">
+        <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,${info.col},${TYPE_INFO[secondType].col});border-radius:12px 12px 0 0"></div>
+        <div class="type-card-top">
+          <div class="type-avatar" style="background:${info.avatarBg};color:${info.avatarCol}">${mainType}</div>
+          <div style="flex:1">
+            <div class="type-name" style="color:${info.col}">${info.name}${isDouble?'  ×  '+sInfo.name:''}</div>
+            <div class="type-en">${info.en}  ·  第${level}层能力水位 · AI知识测试正确率${Math.round(kRate*100)}%</div>
+            <div class="type-desc">${info.desc}</div>
+            ${!isDouble?`<div class="secondary-tag">辅助倾向：<span style="color:${sInfo.col};font-weight:600;margin-left:3px">${sInfo.name}</span></div>`:''}
+          </div>
+        </div>
+        <div class="transform-bar">转型方向：${info.transform}</div>
+      </div>
+
+      <div class="scores-section">
+        <div class="sec-title">五维能力雷达图 · MAHDI匹配度分析</div>
+        <div class="radar-wrap">
+          <div class="radar-chart">${radarSVG}</div>
+          <div class="score-bars-col">
+            ${['M','A','H','D','I'].map(k=>`
+              <div class="score-row">
+                <div class="score-label">
+                  <div class="score-letter" style="background:${TYPE_INFO[k].bg};color:${TYPE_INFO[k].col}">${k}</div>
+                  ${TYPE_INFO[k].name.replace('型','').replace('管理者','').replace('赋能者','赋能').replace('解题者','解题')}
+                </div>
+                <div class="score-track"><div class="score-fill" id="sf${k}" style="background:${TYPE_INFO[k].col};width:0%"></div></div>
+                <div class="score-pct" style="color:${TYPE_INFO[k].col}">${pcts[k]}%</div>
+              </div>`).join('')}
+          </div>
+        </div>
+      </div>
+
+      <div class="level-section">
+        <div class="sec-title">当前AI知识水位</div>
+        <div style="font-size:14px;color:var(--text-secondary);line-height:1.55">
+          你目前处于 <strong style="color:${info.col}">第${level}层 · ${LEVEL_INFO[level-1].l}</strong>
+          <span style="font-size:12px;color:var(--text-muted);margin-left:6px">— ${LEVEL_INFO[level-1].d}</span>
+        </div>
+        <div class="level-bar">
+          ${LEVEL_INFO.map((lv,i)=>`
+            <div class="level-step ${i+1<level?'done':''} ${i+1===level?'current':''}">
+              <span class="level-n">${i+1}</span>
+              <span>${lv.l}</span>
+            </div>`).join('')}
+        </div>
+      </div>
+
+      <div class="style-section">
+        <div class="sec-title">学习方式偏好（四种风格无优劣之分）</div>
+        ${['social','practice','structure','research'].map(s=>`
+          <div class="style-row">
+            <div class="style-name">${STYLE_INFO[s].name}</div>
+            <div class="style-track"><div class="style-fill" id="stf-${s}" style="width:0%"></div></div>
+            <div class="style-pct">${stylePct[s]}%</div>
+          </div>`).join('')}
+        <div class="style-note">你的主导学习方式是<strong style="color:var(--purple)">${STYLE_INFO[topStyle].name}</strong>：${STYLE_INFO[topStyle].desc}。建议在后续学习安排中，优先选择与此风格匹配的学习形式（如更多实操、更多研讨或更多自主钻研），以提升学习效率。</div>
+      </div>
+
+      <div class="path-section">
+        <div class="sec-title">个性化转型路径建议</div>
+        <div style="font-size:12px;color:var(--text-muted);margin-bottom:14px">${info.transform}</div>
+        ${info.paths.map((p,i)=>`
+          <div class="path-item">
+            <div class="path-num" style="background:${info.bg};color:${info.col}">${i+1}</div>
+            <div class="path-content">
+              <h4 style="color:${info.col}">${p.t}</h4>
+              <p>${p.c}</p>
+            </div>
+          </div>`).join('')}
+      </div>
+
+      <div class="learn-section">
+        <div class="sec-title">优先学习内容推荐</div>
+        <div class="learn-items">
+          ${info.learns.map(l=>`
+            <div class="learn-item">
+              <div class="learn-dot" style="background:${info.col}"></div>
+              ${l}
+            </div>`).join('')}
+        </div>
+      </div>
+
+      ${warnHTML}
+
+      <div class="motto"><p>${mottos[mainType]}</p></div>
+      <button class="btn-restart" onclick="restart()">↺ 重新测评</button>
+    </div>`;
+
+  show('s-result');
+
+  setTimeout(()=>{
+    ['M','A','H','D','I'].forEach(k=>{ const el=document.getElementById('sf'+k); if(el) el.style.width=pcts[k]+'%'; });
+    ['social','practice','structure','research'].forEach(s=>{ const el=document.getElementById('stf-'+s); if(el) el.style.width=stylePct[s]+'%'; });
+  }, 300);
+}
+
+function saveAssessmentResult(payload) {
+  const user = currentUser();
+  if (!user || user.role !== 'student') return null;
+  const results = readResults();
+  const record = {
+    id: nowId('result'),
+    userId: user.id,
+    userName: user.displayName || user.email,
+    email: user.email,
+    companyName: user.companyName || '',
+    jobTitle: user.jobTitle || '',
+    createdAt: new Date().toISOString(),
+    answers: { ...answers },
+    final: payload.final,
+    pcts: payload.pcts,
+    dimNorm: payload.dimNorm,
+    sorted: payload.sorted,
+    mainType: payload.mainType,
+    secondType: payload.secondType,
+    mainTypeName: TYPE_INFO[payload.mainType]?.name || payload.mainType,
+    secondTypeName: TYPE_INFO[payload.secondType]?.name || payload.secondType,
+    isDouble: payload.isDouble,
+    level: payload.level,
+    levelName: LEVEL_INFO[payload.level - 1]?.l || '',
+    kRate: Math.round(payload.kRate * 100),
+    stylePct: payload.stylePct,
+    topStyle: payload.topStyle,
+    topStyleName: STYLE_INFO[payload.topStyle]?.name || '',
+    warns: payload.warns,
+  };
+  results.push(record);
+  writeResults(results);
+  return record;
+}
+
+function showInstructorDashboard() {
+  const user = currentUser();
+  if (!user || user.role !== 'instructor') { showAuth('instructor'); return; }
+  document.getElementById('progBar').classList.remove('show');
+  renderInstructorDashboard();
+  show('s-instructor');
+}
+
+function renderInstructorDashboard() {
+  const results = readResults().slice().sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
+  const users = readUsers().filter(u => u.role === 'student');
+  const container = document.getElementById('instructorDashboard');
+  const latest = results[0];
+  const avgK = results.length ? Math.round(results.reduce((s,r)=>s+(r.kRate||0),0)/results.length) : 0;
+  const mainTypeCounts = results.reduce((acc,r)=>{ acc[r.mainType]=(acc[r.mainType]||0)+1; return acc; }, {});
+  const mostType = Object.entries(mainTypeCounts).sort((a,b)=>b[1]-a[1])[0]?.[0] || '-';
+  container.innerHTML = `<div class="instructor-top">
+    <div>
+      <div class="instructor-title">讲师数据看板</div>
+      <div class="instructor-sub">查看本浏览器中全部注册用户的 MAHDI 测评结果。当前为单页原型，本地存储；上线多人使用需接后端数据库。</div>
+    </div>
+    <div class="instructor-actions">
+      <button class="topbar-btn" onclick="show('s-welcome')">返回首页</button>
+      <button class="topbar-btn" onclick="exportInstructorCsv()" ${results.length ? '' : 'disabled'}>导出CSV</button>
+      <button class="topbar-btn" onclick="clearAssessmentResults()" ${results.length ? '' : 'disabled'}>清空记录</button>
+    </div>
+  </div>
+  <div class="dashboard-stats">
+    <div class="dash-stat"><div class="dash-num">${users.length}</div><div class="dash-label">注册用户</div></div>
+    <div class="dash-stat"><div class="dash-num">${results.length}</div><div class="dash-label">测评记录</div></div>
+    <div class="dash-stat"><div class="dash-num">${mostType === '-' ? '-' : TYPE_INFO[mostType].name}</div><div class="dash-label">最多主类型</div></div>
+    <div class="dash-stat"><div class="dash-num">${avgK}%</div><div class="dash-label">平均AI知识正确率</div></div>
+  </div>
+  ${latest ? `<div class="auth-note" style="margin-bottom:14px">最新提交：${formatDate(latest.createdAt)} · ${escHtml(latest.userName)} · ${escHtml(latest.mainTypeName)}</div>` : ''}
+  <div class="result-list">${results.length ? results.map(renderInstructorResult).join('') : '<div class="empty-state">暂无用户测评结果。请先用普通用户账号完成一次测评。</div>'}</div>`;
+}
+
+function renderInstructorResult(r) {
+  const p = r.pcts || {};
+  const type = TYPE_INFO[r.mainType] || TYPE_INFO.M;
+  const warnText = (r.warns || []).map(w => w.name).join('、') || '无特别关注项';
+  return `<div class="result-card">
+    <div class="result-card-head">
+      <div>
+        <div class="result-user">${escHtml(r.userName)}</div>
+        <div class="result-meta">${escHtml(r.companyName || '未填写公司')} · ${escHtml(r.jobTitle || '未填写岗位')} · ${escHtml(r.email)}<br>提交时间：${formatDate(r.createdAt)}</div>
+      </div>
+      <div class="result-type"><strong style="color:${type.col}">${escHtml(r.mainTypeName)}${r.isDouble ? ' × ' + escHtml(r.secondTypeName) : ''}</strong>第${r.level}层 · ${escHtml(r.levelName)}<br>AI知识正确率 ${r.kRate}% · 学习风格 ${escHtml(r.topStyleName)}</div>
+    </div>
+    <div class="result-grid">
+      <div class="mini-bars">${['M','A','H','D','I'].map(k => `<div class="mini-row"><div class="mini-label">${TYPE_INFO[k].name}</div><div class="mini-track"><div class="mini-fill" style="width:${p[k] || 0}%;background:${TYPE_INFO[k].col}"></div></div><span>${p[k] || 0}%</span></div>`).join('')}</div>
+      <div class="result-detail"><strong>辅助倾向：</strong>${escHtml(r.secondTypeName)}<br><strong>关注提示：</strong>${escHtml(warnText)}<br><strong>记录ID：</strong>${escHtml(r.id)}</div>
+    </div>
+  </div>`;
+}
+
+function formatDate(value) {
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return value || '-';
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+}
+
+function exportInstructorCsv() {
+  const rows = readResults().map(r => ({
+    姓名:r.userName, 账号:r.email, 公司:r.companyName, 岗位:r.jobTitle, 提交时间:formatDate(r.createdAt), 主类型:r.mainTypeName, 辅助类型:r.secondTypeName,
+    AI知识水位:`第${r.level}层 ${r.levelName}`, AI知识正确率:`${r.kRate}%`, 学习风格:r.topStyleName,
+    M型:`${r.pcts?.M || 0}%`, A型:`${r.pcts?.A || 0}%`, H型:`${r.pcts?.H || 0}%`, D型:`${r.pcts?.D || 0}%`, I型:`${r.pcts?.I || 0}%`, 风险提示:(r.warns || []).map(w=>w.name).join('；')
+  }));
+  if (!rows.length) return;
+  const header = Object.keys(rows[0]);
+  const csv = [header.join(','), ...rows.map(row => header.map(k => `"${String(row[k] ?? '').replace(/"/g,'""')}"`).join(','))].join('\n');
+  const blob = new Blob(['\ufeff' + csv], { type:'text/csv;charset=utf-8;' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `MAHDI测评结果_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function clearAssessmentResults() {
+  if (!confirm('确认清空本浏览器中的全部测评结果？该操作不可恢复。')) return;
+  writeResults([]);
+  renderInstructorDashboard();
+}
+
+function restart() {
+  cur=0; answers={};
+  document.getElementById('pbFill').style.width='0%';
+  document.getElementById('progBar').classList.remove('show');
+  show('s-welcome');
+}
+</script>
+</body>
+</html>
