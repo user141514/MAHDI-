@@ -21,6 +21,16 @@ def init_db() -> None:
         conn.execute("CREATE TABLE IF NOT EXISTS users (id TEXT PRIMARY KEY, email TEXT UNIQUE NOT NULL, password_hash TEXT NOT NULL, display_name TEXT NOT NULL, company_name TEXT DEFAULT '', job_title TEXT DEFAULT '', role TEXT NOT NULL, created_at TEXT NOT NULL)")
         conn.execute("CREATE TABLE IF NOT EXISTS sessions (session_id TEXT PRIMARY KEY, user_id TEXT NOT NULL, expires_at TEXT NOT NULL, created_at TEXT NOT NULL)")
         conn.execute("CREATE TABLE IF NOT EXISTS results (id TEXT PRIMARY KEY, user_id TEXT NOT NULL, payload TEXT NOT NULL, created_at TEXT NOT NULL)")
+        existing = {row[1] for row in conn.execute("PRAGMA table_info(users)").fetchall()}
+        migrations = {
+            "recovery_question": "ALTER TABLE users ADD COLUMN recovery_question TEXT",
+            "recovery_answer_hash": "ALTER TABLE users ADD COLUMN recovery_answer_hash TEXT",
+            "reset_token": "ALTER TABLE users ADD COLUMN reset_token TEXT",
+            "reset_token_expires_at": "ALTER TABLE users ADD COLUMN reset_token_expires_at TEXT",
+        }
+        for column, sql in migrations.items():
+            if column not in existing:
+                conn.execute(sql)
 
 
 def dump_json(value: Any) -> str:

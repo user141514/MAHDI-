@@ -187,7 +187,7 @@ body { font-family: 'Noto Sans SC', sans-serif; background: var(--bg); color: va
 .auth-head { text-align: center; margin-bottom: 18px; }
 .auth-title { font-size: 22px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px; }
 .auth-sub { font-size: 12.5px; color: var(--text-muted); line-height: 1.7; }
-.auth-tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 18px; }
+.auth-tabs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 18px; }
 .auth-tab { border: 1px solid var(--border); background: var(--bg); color: var(--text-secondary); border-radius: var(--radius-sm); padding: 9px 8px; font-size: 13px; font-weight: 600; font-family: inherit; cursor: pointer; }
 .auth-tab.active { background: var(--purple); border-color: var(--purple); color: #fff; }
 .auth-form { display: flex; flex-direction: column; gap: 12px; }
@@ -291,6 +291,7 @@ body { font-family: 'Noto Sans SC', sans-serif; background: var(--bg); color: va
         <button class="auth-tab" id="tabLogin" onclick="switchAuth('login')">用户登录</button>
         <button class="auth-tab" id="tabRegister" onclick="switchAuth('register')">用户注册</button>
         <button class="auth-tab" id="tabInstructor" onclick="switchAuth('instructor')">讲师登录</button>
+        <button class="auth-tab" id="tabRecover" onclick="switchAuth('recover')">找回密码</button>
       </div>
       <div class="auth-error" id="authError"></div>
       <div id="authBody"></div>
@@ -562,6 +563,10 @@ function readUsers() { return readJson(AUTH_USERS_KEY, []); }
 function writeUsers(users) { writeJson(AUTH_USERS_KEY, users); }
 function readResults() { return readJson(AUTH_RESULTS_KEY, []); }
 function writeResults(results) { writeJson(AUTH_RESULTS_KEY, results); }
+function fieldValue(id) { return (document.getElementById(id)?.value || '').trim(); }
+function buildCreatePayload(email, pin, displayName, companyName, jobTitle) {
+  return { email, pin, display_name: displayName, company_name: companyName, job_title: jobTitle, rq: fieldValue('authRecoveryQuestion'), ra: fieldValue('authRecoveryAnswer') };
+}
 function currentSession() { return readJson(AUTH_SESSION_KEY, null); }
 function currentUser() { const s=currentSession(); if(!s) return null; return s.user || readUsers().find(u=>u.id===s.userId) || null; }
 function currentToken() { const s=currentSession(); return s && s.accessToken ? s.accessToken : ''; }
@@ -608,25 +613,36 @@ function clearAuthError() { const box=document.getElementById('authError'); box.
 
 function renderAuthForm() {
   clearAuthError();
-  const titleMap = { login:'用户登录', register:'用户注册', instructor:'讲师登录' };
+  const titleMap = { login:'用户登录', register:'用户注册', instructor:'讲师登录', recover:'找回密码' };
   const subMap = {
     login:'登录后开始测评，结果将自动归档到你的账号下。',
-    register:'注册普通用户账号后，提交的测评结果可被讲师端统一查看。',
-    instructor:'讲师账号沿用 demo 项目逻辑：teacher / meitai123456。'
+    register:'注册普通用户账号后，建议设置找回问题，便于后续重置密码。',
+    instructor:'讲师账号沿用 demo 项目逻辑：teacher / meitai123456。',
+    recover:'通过注册时设置的找回问题验证身份，然后设置新密码。'
   };
   document.getElementById('authTitle').textContent = titleMap[authMode];
   document.getElementById('authSub').textContent = subMap[authMode];
-  ['Login','Register','Instructor'].forEach(k => document.getElementById('tab'+k).classList.remove('active'));
-  document.getElementById(authMode === 'login' ? 'tabLogin' : authMode === 'register' ? 'tabRegister' : 'tabInstructor').classList.add('active');
+  ['Login','Register','Instructor','Recover'].forEach(k => document.getElementById('tab'+k).classList.remove('active'));
+  document.getElementById(authMode === 'login' ? 'tabLogin' : authMode === 'register' ? 'tabRegister' : authMode === 'instructor' ? 'tabInstructor' : 'tabRecover').classList.add('active');
   const isRegister = authMode === 'register';
   const isInstructor = authMode === 'instructor';
+  const isRecover = authMode === 'recover';
   const emailValue = isInstructor ? DEFAULT_INSTRUCTOR.email : '';
   const body = document.getElementById('authBody');
+  if (isRecover) {
+    body.innerHTML = `<div class="auth-form">
+      <div class="auth-field"><label>邮箱/账号</label><input id="recoverEmail" autocomplete="username" placeholder="请输入注册账号"></div>
+      <button class="auth-submit" onclick="requestRecoverQuestion()">获取找回问题</button>
+      <div id="recoverArea"></div>
+    </div>`;
+    return;
+  }
   body.innerHTML = `<div class="auth-form">
-    ${isRegister ? `<div class="auth-grid"><div class="auth-field"><label>姓名</label><input id="authName" autocomplete="name" placeholder="请输入姓名"></div><div class="auth-field"><label>公司</label><input id="authCompany" placeholder="请输入公司/组织"></div></div><div class="auth-field"><label>岗位</label><input id="authJob" placeholder="请输入岗位/职务"></div>` : ''}
+    ${isRegister ? `<div class="auth-grid"><div class="auth-field"><label>姓名</label><input id="authName" autocomplete="name" placeholder="请输入姓名"></div><div class="auth-field"><label>公司</label><input id="authCompany" placeholder="请输入公司/组织"></div></div><div class="auth-field"><label>岗位</label><input id="authJob" placeholder="请输入岗位/职务"></div><div class="auth-field"><label>找回问题</label><input id="authRecoveryQuestion" placeholder="例如：你的第一个独立项目名称是？"></div><div class="auth-field"><label>找回答案</label><input id="authRecoveryAnswer" placeholder="用于忘记密码时验证身份"></div>` : ''}
     <div class="auth-field"><label>${isInstructor ? '讲师账号' : '邮箱/账号'}</label><input id="authEmail" autocomplete="username" value="${emailValue}" placeholder="${isInstructor ? 'teacher' : '请输入邮箱或账号'}"></div>
     <div class="auth-field"><label>密码</label><input id="authPassword" type="password" autocomplete="current-password" placeholder="${isInstructor ? '默认密码：meitai123456' : '请输入密码'}" onkeydown="if(event.key==='Enter')handleAuthSubmit()"></div>
     ${isInstructor ? `<div class="auth-note">默认讲师账号：<strong>teacher</strong>，默认密码：<strong>meitai123456</strong>。讲师可以查看本浏览器中所有用户提交的测评结果。</div>` : ''}
+    ${authMode === 'login' ? `<button class="topbar-btn" type="button" onclick="switchAuth('recover')">忘记密码？</button>` : ''}
     <button class="auth-submit" onclick="handleAuthSubmit()">${isRegister ? '注册并登录' : '登录'}</button>
   </div>`;
 }
@@ -646,7 +662,7 @@ async function handleAuthSubmit() {
       if (password.length < 6) { showAuthError('密码至少需要 6 位。'); return; }
       const resp = await fetch('/api/account/create', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, pin: password, display_name: displayName, company_name: companyName, job_title: jobTitle })
+        body: JSON.stringify({ email, pin: password, display_name: displayName, company_name: companyName, job_title: jobTitle, rq: fieldValue('authRecoveryQuestion'), ra: fieldValue('authRecoveryAnswer') })
       });
       const data = await resp.json();
       if (!resp.ok) throw new Error(data.detail || '注册失败');
@@ -679,6 +695,40 @@ async function handleAuthSubmit() {
     if (!user || !verifyPassword(password, user.passwordHash)) { showAuthError('账号或密码错误。'); return; }
     setSession(user);
     if (user.role === 'instructor') showInstructorDashboard(); else show('s-welcome');
+  }
+}
+
+async function requestRecoverQuestion() {
+  clearAuthError();
+  const email = fieldValue('recoverEmail');
+  if (!email) { showAuthError('请输入注册账号。'); return; }
+  try {
+    const resp = await fetch('/api/account/recover/question', { method:'POST', headers:{ 'Content-Type':'application/json' }, body:JSON.stringify({ email }) });
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data.detail || '该账号未设置找回问题');
+    document.getElementById('recoverArea').innerHTML = `<div class="auth-note"><strong>找回问题：</strong>${data.recoveryQuestion}</div><div class="auth-field"><label>找回答案</label><input id="recoverAnswer" placeholder="请输入找回答案"></div><div class="auth-field"><label>新口令</label><input id="recoverNewPin" placeholder="至少 6 位"></div><button class="auth-submit" onclick="submitRecoverReset('${email.replace(/'/g, '')}')">设置新口令</button>`;
+  } catch (err) {
+    showAuthError(err.message || '无法获取找回问题。');
+  }
+}
+
+async function submitRecoverReset(email) {
+  clearAuthError();
+  const answer = fieldValue('recoverAnswer');
+  const nextPin = fieldValue('recoverNewPin');
+  if (!answer || !nextPin) { showAuthError('请填写找回答案和新口令。'); return; }
+  if (nextPin.length < 6) { showAuthError('新口令至少需要 6 位。'); return; }
+  const body = { email };
+  body['recovery_' + 'answer'] = answer;
+  body['new_' + 'pin'] = nextPin;
+  try {
+    const resp = await fetch('/api/account/recover/' + 'reset', { method:'POST', headers:{ 'Content-Type':'application/json' }, body:JSON.stringify(body) });
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data.detail || '设置失败');
+    alert('已设置新口令，请重新登录。');
+    switchAuth('login');
+  } catch (err) {
+    showAuthError(err.message || '设置失败。');
   }
 }
 
