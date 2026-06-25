@@ -618,7 +618,7 @@ function renderAuthForm() {
     login:'登录后开始测评，结果将自动归档到你的账号下。',
     register:'注册普通用户账号后，建议设置找回问题，便于后续重置密码。',
     instructor:'讲师账号沿用 demo 项目逻辑：teacher / meitai123456。',
-    recover:'通过注册时设置的找回问题验证身份，然后设置新密码。'
+    recover:'先输入注册账号，系统会显示你注册时设置的问题。回答正确后即可设置新密码。'
   };
   document.getElementById('authTitle').textContent = titleMap[authMode];
   document.getElementById('authSub').textContent = subMap[authMode];
@@ -632,16 +632,14 @@ function renderAuthForm() {
   if (isRecover) {
     body.innerHTML = `<div class="auth-form">
       <div class="auth-field"><label>邮箱/账号</label><input id="recoverEmail" autocomplete="username" placeholder="请输入注册账号"></div>
-      <button class="auth-submit" onclick="requestRecoverQuestion()">获取找回问题</button>
+      <button class="auth-submit" onclick="requestRecoverQuestion()">下一步：查看找回问题</button>
       <div id="recoverArea"></div>
-      <div class="auth-note">也可以使用邮件重置链接。若未配置邮件服务，系统会在本地显示测试链接。</div>
-      <button class="topbar-btn" type="button" onclick="showAuthError('邮件找回后端已接入，前端入口下一步开放。')">发送邮件重置链接</button>
-      <div id="mailResetArea"></div>
+      <div class="auth-note">如果注册时没有设置找回问题，请联系讲师协助处理。</div>
     </div>`;
     return;
   }
   body.innerHTML = `<div class="auth-form">
-    ${isRegister ? `<div class="auth-grid"><div class="auth-field"><label>姓名</label><input id="authName" autocomplete="name" placeholder="请输入姓名"></div><div class="auth-field"><label>公司</label><input id="authCompany" placeholder="请输入公司/组织"></div></div><div class="auth-field"><label>岗位</label><input id="authJob" placeholder="请输入岗位/职务"></div><div class="auth-field"><label>找回问题</label><input id="authRecoveryQuestion" placeholder="例如：你的第一个独立项目名称是？"></div><div class="auth-field"><label>找回答案</label><input id="authRecoveryAnswer" placeholder="用于忘记密码时验证身份"></div>` : ''}
+    ${isRegister ? `<div class="auth-grid"><div class="auth-field"><label>姓名</label><input id="authName" autocomplete="name" placeholder="请输入姓名"></div><div class="auth-field"><label>公司</label><input id="authCompany" placeholder="请输入公司/组织"></div></div><div class="auth-field"><label>岗位</label><input id="authJob" placeholder="请输入岗位/职务"></div><div class="auth-note">建议设置一个找回问题。以后忘记密码时，可用它验证身份；不填写也可以继续注册。</div><div class="auth-field"><label>找回问题（选填）</label><input id="authRecoveryQuestion" placeholder="例如：你的第一个独立项目名称是？"></div><div class="auth-field"><label>找回答案（选填）</label><input id="authRecoveryAnswer" placeholder="请填写自己容易记住的答案"></div>` : ''}
     <div class="auth-field"><label>${isInstructor ? '讲师账号' : '邮箱/账号'}</label><input id="authEmail" autocomplete="username" value="${emailValue}" placeholder="${isInstructor ? 'teacher' : '请输入邮箱或账号'}"></div>
     <div class="auth-field"><label>密码</label><input id="authPassword" type="password" autocomplete="current-password" placeholder="${isInstructor ? '默认密码：meitai123456' : '请输入密码'}" onkeydown="if(event.key==='Enter')handleAuthSubmit()"></div>
     ${isInstructor ? `<div class="auth-note">默认讲师账号：<strong>teacher</strong>，默认密码：<strong>meitai123456</strong>。讲师可以查看本浏览器中所有用户提交的测评结果。</div>` : ''}
@@ -709,7 +707,7 @@ async function requestRecoverQuestion() {
     const resp = await fetch('/api/account/recover/question', { method:'POST', headers:{ 'Content-Type':'application/json' }, body:JSON.stringify({ email }) });
     const data = await resp.json();
     if (!resp.ok) throw new Error(data.detail || '该账号未设置找回问题');
-    document.getElementById('recoverArea').innerHTML = `<div class="auth-note"><strong>找回问题：</strong>${data.recoveryQuestion}</div><div class="auth-field"><label>找回答案</label><input id="recoverAnswer" placeholder="请输入找回答案"></div><div class="auth-field"><label>新口令</label><input id="recoverNewPin" placeholder="至少 6 位"></div><button class="auth-submit" onclick="submitRecoverReset('${email.replace(/'/g, '')}')">设置新口令</button>`;
+    document.getElementById('recoverArea').innerHTML = `<div class="auth-note"><strong>找回问题：</strong>${data.recoveryQuestion}</div><div class="auth-field"><label>找回答案</label><input id="recoverAnswer" placeholder="请输入找回答案"></div><div class="auth-field"><label>新密码</label><input id="recoverNewPin" type="password" placeholder="至少 6 位"></div><button class="auth-submit" onclick="submitRecoverReset('${email.replace(/'/g, '')}')">设置新密码</button>`;
   } catch (err) {
     showAuthError(err.message || '无法获取找回问题。');
   }
@@ -719,8 +717,8 @@ async function submitRecoverReset(email) {
   clearAuthError();
   const answer = fieldValue('recoverAnswer');
   const nextPin = fieldValue('recoverNewPin');
-  if (!answer || !nextPin) { showAuthError('请填写找回答案和新口令。'); return; }
-  if (nextPin.length < 6) { showAuthError('新口令至少需要 6 位。'); return; }
+  if (!answer || !nextPin) { showAuthError('请填写找回答案和新密码。'); return; }
+  if (nextPin.length < 6) { showAuthError('新密码至少需要 6 位。'); return; }
   const body = { email };
   body['recovery_' + 'answer'] = answer;
   body['new_' + 'pin'] = nextPin;
@@ -728,7 +726,7 @@ async function submitRecoverReset(email) {
     const resp = await fetch('/api/account/recover/' + 'reset', { method:'POST', headers:{ 'Content-Type':'application/json' }, body:JSON.stringify(body) });
     const data = await resp.json();
     if (!resp.ok) throw new Error(data.detail || '设置失败');
-    alert('已设置新口令，请重新登录。');
+    alert('新密码已设置，请重新登录。');
     switchAuth('login');
   } catch (err) {
     showAuthError(err.message || '设置失败。');

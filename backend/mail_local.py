@@ -42,7 +42,7 @@ def send_reset_link(to_email: str, token: str) -> bool:
     msg["Subject"] = "MAHDI测评系统账号重置"
     msg["From"] = f"{from_name} <{from_email}>"
     msg["To"] = to_email
-    msg.set_content(f"请在 1 小时内打开以下链接设置新口令：\n{link}\n\n如果这不是你的操作，请忽略本邮件。")
+    msg.set_content(f"请在 1 小时内打开以下链接设置新密码：\n{link}\n\n如果这不是你的操作，请忽略本邮件。")
 
     client_cls = smtplib.SMTP_SSL if use_ssl else smtplib.SMTP
     with client_cls(host, port, timeout=30) as client:
