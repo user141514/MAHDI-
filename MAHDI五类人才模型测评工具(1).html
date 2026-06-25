@@ -563,8 +563,9 @@ function writeUsers(users) { writeJson(AUTH_USERS_KEY, users); }
 function readResults() { return readJson(AUTH_RESULTS_KEY, []); }
 function writeResults(results) { writeJson(AUTH_RESULTS_KEY, results); }
 function currentSession() { return readJson(AUTH_SESSION_KEY, null); }
-function currentUser() { const s=currentSession(); if(!s) return null; return readUsers().find(u=>u.id===s.userId) || null; }
-function setSession(user) { writeJson(AUTH_SESSION_KEY, { userId:user.id, role:user.role, loginAt:new Date().toISOString() }); renderTopbar(); }
+function currentUser() { const s=currentSession(); if(!s) return null; return s.user || readUsers().find(u=>u.id===s.userId) || null; }
+function currentToken() { const s=currentSession(); return s && s.accessToken ? s.accessToken : ''; }
+function setSession(user, accessToken) { writeJson(AUTH_SESSION_KEY, { userId:user.id, role:user.role, user, accessToken:accessToken || '', loginAt:new Date().toISOString() }); renderTopbar(); }
 
 function ensureInstructorAccount() {
   const users = readUsers();
@@ -630,27 +631,55 @@ function renderAuthForm() {
   </div>`;
 }
 
-function handleAuthSubmit() {
+async function handleAuthSubmit() {
   clearAuthError();
   const email = (document.getElementById('authEmail')?.value || '').trim();
   const password = (document.getElementById('authPassword')?.value || '').trim();
   if (!email || !password) { showAuthError('请输入账号和密码。'); return; }
   const users = readUsers();
-  if (authMode === 'register') {
-    const displayName = (document.getElementById('authName')?.value || '').trim();
-    const companyName = (document.getElementById('authCompany')?.value || '').trim();
-    const jobTitle = (document.getElementById('authJob')?.value || '').trim();
-    if (!displayName || !companyName || !jobTitle) { showAuthError('请补全姓名、公司和岗位。'); return; }
-    if (password.length < 6) { showAuthError('密码至少需要 6 位。'); return; }
-    if (users.some(u => u.email.toLowerCase() === email.toLowerCase())) { showAuthError('该账号已被注册。'); return; }
-    const user = { id:nowId('user'), email, passwordHash:hashPassword(password), displayName, companyName, jobTitle, role:'student', createdAt:new Date().toISOString() };
-    users.push(user); writeUsers(users); setSession(user); show('s-welcome'); return;
+  try {
+    if (authMode === 'register') {
+      const displayName = (document.getElementById('authName')?.value || '').trim();
+      const companyName = (document.getElementById('authCompany')?.value || '').trim();
+      const jobTitle = (document.getElementById('authJob')?.value || '').trim();
+      if (!displayName || !companyName || !jobTitle) { showAuthError('请补全姓名、公司和岗位。'); return; }
+      if (password.length < 6) { showAuthError('密码至少需要 6 位。'); return; }
+      const resp = await fetch('/api/account/create', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, pin: password, display_name: displayName, company_name: companyName, job_title: jobTitle })
+      });
+      const data = await resp.json();
+      if (!resp.ok) throw new Error(data.detail || '注册失败');
+      setSession(data.user, data.accessToken);
+      show('s-welcome');
+      return;
+    }
+    const role = authMode === 'instructor' ? 'instructor' : 'student';
+    const resp = await fetch('/api/account/open', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, pin: password, role })
+    });
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data.detail || '登录失败');
+    setSession(data.user, data.accessToken);
+    if (data.user.role === 'instructor') showInstructorDashboard(); else show('s-welcome');
+  } catch (err) {
+    if (location.protocol !== 'file:') { showAuthError(err.message || '账号服务暂时不可用'); return; }
+    if (authMode === 'register') {
+      const displayName = (document.getElementById('authName')?.value || '').trim();
+      const companyName = (document.getElementById('authCompany')?.value || '').trim();
+      const jobTitle = (document.getElementById('authJob')?.value || '').trim();
+      if (!displayName || !companyName || !jobTitle) { showAuthError('请补全姓名、公司和岗位。'); return; }
+      if (users.some(u => u.email.toLowerCase() === email.toLowerCase())) { showAuthError('该账号已被注册。'); return; }
+      const user = { id:nowId('user'), email, passwordHash:hashPassword(password), displayName, companyName, jobTitle, role:'student', createdAt:new Date().toISOString() };
+      users.push(user); writeUsers(users); setSession(user); show('s-welcome'); return;
+    }
+    const expectedRole = authMode === 'instructor' ? 'instructor' : 'student';
+    const user = users.find(u => u.email.toLowerCase() === email.toLowerCase() && u.role === expectedRole);
+    if (!user || !verifyPassword(password, user.passwordHash)) { showAuthError('账号或密码错误。'); return; }
+    setSession(user);
+    if (user.role === 'instructor') showInstructorDashboard(); else show('s-welcome');
   }
-  const expectedRole = authMode === 'instructor' ? 'instructor' : 'student';
-  const user = users.find(u => u.email.toLowerCase() === email.toLowerCase() && u.role === expectedRole);
-  if (!user || !verifyPassword(password, user.passwordHash)) { showAuthError('账号或密码错误。'); return; }
-  setSession(user);
-  if (user.role === 'instructor') showInstructorDashboard(); else show('s-welcome');
 }
 
 function logout() {

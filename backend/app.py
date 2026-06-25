@@ -9,6 +9,7 @@ from fastapi import FastAPI, Header, HTTPException
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 
+from .account_api import router as account_router
 from .auth_local import TEACHER_ACCOUNT, TEACHER_PIN, ensure_teacher, now_iso, public_user
 from .session_local import get_current, issue
 from .storage import connect, dump_json, init_db, load_json
@@ -17,6 +18,7 @@ ROOT = Path(__file__).resolve().parents[1]
 HTML_FILE = ROOT / "MAHDI五类人才模型测评工具(1).html"
 
 app = FastAPI(title="MAHDI Assessment API")
+app.include_router(account_router)
 
 
 class RegisterIn(BaseModel):
