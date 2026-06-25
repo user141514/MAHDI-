@@ -20,7 +20,7 @@ def issue(conn, user_id: str) -> str:
 
 
 def get_current(authorization = Header(default=None)):
-    if not authorization:
+    if not authorization or not isinstance(authorization, str):
         raise HTTPException(401, "请先登录。")
     prefix, _, sid = authorization.partition(" ")
     if prefix.lower() != "bearer" or not sid:

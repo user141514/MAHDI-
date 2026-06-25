@@ -1109,7 +1109,7 @@ function saveAssessmentResult(payload) {
   writeResults(results);
   fetch('/api/results', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...(currentToken() ? { Authorization: `Bearer ${currentToken()}` } : {}) },
     body: JSON.stringify(record)
   }).catch(() => {});
   return record;
@@ -1125,7 +1125,7 @@ function showInstructorDashboard() {
 
 async function loadDashboardData() {
   try {
-    const resp = await fetch('/api/instructor/results');
+    const resp = await fetch('/api/instructor/results', { headers: currentToken() ? { Authorization: `Bearer ${currentToken()}` } : {} });
     if (!resp.ok) throw new Error('backend unavailable');
     return await resp.json();
   } catch(e) {
@@ -1205,8 +1205,11 @@ function exportInstructorCsv() {
   URL.revokeObjectURL(a.href);
 }
 
-function clearAssessmentResults() {
-  if (!confirm('确认清空本浏览器中的全部测评结果？该操作不可恢复。')) return;
+async function clearAssessmentResults() {
+  if (!confirm('确认清空全部测评结果？该操作不可恢复。')) return;
+  try {
+    await fetch('/api/instructor/results', { method:'DELETE', headers: currentToken() ? { Authorization: `Bearer ${currentToken()}` } : {} });
+  } catch(e) {}
   writeResults([]);
   renderInstructorDashboard();
 }

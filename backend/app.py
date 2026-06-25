@@ -73,15 +73,23 @@ def index() -> FileResponse:
 
 
 @app.post("/api/results")
-def save_result(data: ResultIn) -> Dict[str, Any]:
+def save_result(data: ResultIn, authorization: str = Header(default=None)) -> Dict[str, Any]:
+    current = get_current(authorization)
+    if current["role"] != "student":
+        raise HTTPException(403, "讲师账号不能提交学员测评。")
     payload = data.model_dump()
     result_id = "result_" + secrets.token_hex(8)
     created_at = now_iso()
-    user_id = str(payload.pop("userId", "local_user"))
-    user_name = str(payload.pop("userName", "未命名用户"))
-    email = str(payload.pop("email", ""))
-    company_name = str(payload.pop("companyName", ""))
-    job_title = str(payload.pop("jobTitle", ""))
+    payload.pop("userId", None)
+    payload.pop("userName", None)
+    payload.pop("email", None)
+    payload.pop("companyName", None)
+    payload.pop("jobTitle", None)
+    user_id = current["id"]
+    user_name = current["display_name"]
+    email = current["email"]
+    company_name = current["company_name"] or ""
+    job_title = current["job_title"] or ""
     payload.update({"id": result_id, "userId": user_id, "userName": user_name, "email": email, "companyName": company_name, "jobTitle": job_title, "createdAt": created_at})
     with connect() as conn:
         conn.execute("INSERT INTO results VALUES (?, ?, ?, ?)", (result_id, user_id, dump_json(payload), created_at))
@@ -89,7 +97,10 @@ def save_result(data: ResultIn) -> Dict[str, Any]:
 
 
 @app.get("/api/instructor/results")
-def instructor_results() -> Dict[str, Any]:
+def instructor_results(authorization: str = Header(default=None)) -> Dict[str, Any]:
+    current = get_current(authorization)
+    if current["role"] != "instructor":
+        raise HTTPException(403, "仅讲师可访问。")
     with connect() as conn:
         rows = conn.execute("SELECT * FROM results ORDER BY created_at DESC").fetchall()
     results = [load_json(row["payload"]) for row in rows]
@@ -105,7 +116,10 @@ def instructor_results() -> Dict[str, Any]:
 
 
 @app.delete("/api/instructor/results")
-def clear_results() -> Dict[str, bool]:
+def clear_results(authorization: str = Header(default=None)) -> Dict[str, bool]:
+    current = get_current(authorization)
+    if current["role"] != "instructor":
+        raise HTTPException(403, "仅讲师可访问。")
     with connect() as conn:
         conn.execute("DELETE FROM results")
     return {"ok": True}
