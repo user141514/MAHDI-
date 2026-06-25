@@ -39,3 +39,10 @@ def dump_json(value: Any) -> str:
 
 def load_json(value: str) -> Any:
     return json.loads(value)
+
+
+def update_user_value(conn: sqlite3.Connection, user_id: str, column: str, value: Any) -> None:
+    allowed = {row[1] for row in conn.execute("PRAGMA table_info(users)").fetchall()}
+    if column not in allowed:
+        raise ValueError("unknown user column")
+    conn.execute("UPDATE users SET " + column + "=? WHERE id=?", (value, user_id))

@@ -2,14 +2,16 @@ from __future__ import annotations
 
 import hashlib
 import secrets
+from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, Optional
 
 from fastapi import APIRouter, Header, HTTPException
 from pydantic import BaseModel, Field
 
 from .auth_local import TEACHER_ACCOUNT, public_user, now_iso
+from .mail_local import build_reset_url, send_reset_link
 from .session_local import get_current, issue
-from .storage import connect
+from .storage import connect, update_user_value
 
 router = APIRouter(prefix="/api/account")
 
@@ -41,9 +43,10 @@ class EmailReq(BaseModel):
 
 
 class AnswerResetReq(BaseModel):
-    email: str = Field(min_length=1)
-    recovery_answer: str = Field(min_length=1)
+    email: Optional[str] = None
+    recovery_answer: Optional[str] = None
     new_pin: str = Field(min_length=6)
+    token: Optional[str] = None
 
 
 @router.post("/create")
@@ -92,10 +95,31 @@ def recover_question(data: EmailReq) -> Dict[str, Any]:
 
 @router.post("/recover/reset")
 def recover_reset(data: AnswerResetReq) -> Dict[str, bool]:
-    email = data.email.strip().lower()
+    email = (data.email or "").strip().lower()
     with connect() as conn:
-        row = conn.execute("SELECT id, recovery_answer_hash FROM users WHERE email=? AND role='student'", (email,)).fetchone()
+        if data.token:
+            marker = "token-ok"
+            row = conn.execute("SELECT id, reset_token_expires_at, ? AS recovery_answer_hash FROM users WHERE reset_token=? AND role='student'", (answer_hash(marker), data.token)).fetchone()
+            if row is not None and row["reset_token_expires_at"] and datetime.fromisoformat(row["reset_token_expires_at"]) < datetime.now(timezone.utc):
+                raise HTTPException(400, "重置链接已过期。")
+            data.recovery_answer = marker
+        else:
+            row = conn.execute("SELECT id, recovery_answer_hash FROM users WHERE email=? AND role='student'", (email,)).fetchone()
         if row is None or not row["recovery_answer_hash"] or row["recovery_answer_hash"] != answer_hash(data.recovery_answer):
             raise HTTPException(401, "找回答案不正确。")
         conn.execute("UPDATE users SET password_hash=?, reset_token=NULL, reset_token_expires_at=NULL WHERE id=?", (data.new_pin, row["id"]))
     return {"ok": True}
+
+
+@router.post("/mail/start")
+def mail_start(data: EmailReq) -> Dict[str, Any]:
+    email = data.email.strip().lower()
+    token = secrets.token_urlsafe(24)
+    expires_at = (datetime.now(timezone.utc) + timedelta(hours=1)).isoformat()
+    with connect() as conn:
+        row = conn.execute("SELECT id FROM users WHERE email=? AND role='student'", (email,)).fetchone()
+        if row is None:
+            raise HTTPException(404, "该账号不存在。")
+        conn.execute("UPDATE users SET reset_token=?, reset_token_expires_at=? WHERE id=?", (token, expires_at, row["id"]))
+    sent = send_reset_link(email, token)
+    return {"ok": True, "sent": sent, "resetUrl": None if sent else build_reset_url(token)}

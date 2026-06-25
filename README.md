@@ -49,6 +49,30 @@ backend/data/mahid.db
 
 该文件已被 `.gitignore` 忽略，不会提交到 Git。
 
+## 邮件重置配置
+
+后端已接入邮件重置申请接口：
+
+```text
+/api/account/mail/start
+```
+
+可选环境变量：
+
+```text
+MAHDI_MAIL_HOST
+MAHDI_MAIL_PORT
+MAHDI_MAIL_USER
+MAHDI_MAIL_KEY
+MAHDI_MAIL_FROM
+MAHDI_MAIL_FROM_NAME
+MAHDI_MAIL_TLS
+MAHDI_MAIL_SSL
+MAHDI_PUBLIC_BASE_URL
+```
+
+未配置邮件服务时，后端会返回本地测试链接，便于开发调试。
+
 ## 说明
 
 当前版本目标是短期内满足本地/局域网部署：学员提交测评后，讲师账号可以查看学员数据。后续如需公网多人长期使用，可再迁移到 PostgreSQL 或云数据库。

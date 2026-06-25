@@ -634,6 +634,9 @@ function renderAuthForm() {
       <div class="auth-field"><label>邮箱/账号</label><input id="recoverEmail" autocomplete="username" placeholder="请输入注册账号"></div>
       <button class="auth-submit" onclick="requestRecoverQuestion()">获取找回问题</button>
       <div id="recoverArea"></div>
+      <div class="auth-note">也可以使用邮件重置链接。若未配置邮件服务，系统会在本地显示测试链接。</div>
+      <button class="topbar-btn" type="button" onclick="showAuthError('邮件找回后端已接入，前端入口下一步开放。')">发送邮件重置链接</button>
+      <div id="mailResetArea"></div>
     </div>`;
     return;
   }
