@@ -32,7 +32,7 @@ def ensure_teacher() -> None:
         row = conn.execute("SELECT id FROM users WHERE email=? AND role='instructor'", (TEACHER_ACCOUNT,)).fetchone()
         if row is None:
             conn.execute(
-                "INSERT INTO users VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                "INSERT INTO users (id, email, password_hash, display_name, company_name, job_title, role, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
                 ("teacher", TEACHER_ACCOUNT, TEACHER_PIN, "讲师", "美太咨询", "讲师", "instructor", now_iso()),
             )
 
