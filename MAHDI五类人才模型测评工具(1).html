@@ -626,7 +626,7 @@ function renderAuthForm() {
   const subMap = {
     login:'登录后开始测评，结果将自动归档到你的账号下。',
     register:'注册普通用户账号后，建议设置找回问题，便于后续重置密码。',
-    instructor:'讲师账号沿用 demo 项目逻辑：teacher / meitai123456。',
+    instructor:'请输入讲师账号和密码登录。',
     recover:'先输入注册账号，系统会显示你注册时设置的问题。回答正确后即可设置新密码。'
   };
   document.getElementById('authTitle').textContent = titleMap[authMode];
@@ -650,8 +650,8 @@ function renderAuthForm() {
   body.innerHTML = `<div class="auth-form">
     ${isRegister ? `<div class="auth-grid"><div class="auth-field"><label>姓名</label><input id="authName" autocomplete="name" placeholder="请输入姓名"></div><div class="auth-field"><label>公司</label><input id="authCompany" placeholder="请输入公司/组织"></div></div><div class="auth-field"><label>岗位</label><input id="authJob" placeholder="请输入岗位/职务"></div><div class="auth-note">建议设置一个找回问题。以后忘记密码时，可用它验证身份；不填写也可以继续注册。</div><div class="auth-field"><label>找回问题（选填）</label><input id="authRecoveryQuestion" placeholder="例如：你的第一个独立项目名称是？"></div><div class="auth-field"><label>找回答案（选填）</label><input id="authRecoveryAnswer" placeholder="请填写自己容易记住的答案"></div>` : ''}
     <div class="auth-field"><label>${isInstructor ? '讲师账号' : '邮箱/账号'}</label><input id="authEmail" autocomplete="username" value="${emailValue}" placeholder="${isInstructor ? 'teacher' : '请输入邮箱或账号'}"></div>
-    <div class="auth-field"><label>密码</label><input id="authPassword" type="password" autocomplete="current-password" placeholder="${isInstructor ? '默认密码：meitai123456' : '请输入密码'}" onkeydown="if(event.key==='Enter')handleAuthSubmit()"></div>
-    ${isInstructor ? `<div class="auth-note">默认讲师账号：<strong>teacher</strong>，默认密码：<strong>meitai123456</strong>。讲师可以查看本浏览器中所有用户提交的测评结果。</div>` : ''}
+    <div class="auth-field"><label>密码</label><input id="authPassword" type="password" autocomplete="current-password" placeholder="请输入密码" onkeydown="if(event.key==='Enter')handleAuthSubmit()"></div>
+    ${isInstructor ? `<div class="auth-note">讲师可以查看本浏览器中所有用户提交的测评结果。</div>` : ''}
     ${authMode === 'login' ? `<button class="topbar-btn" type="button" onclick="switchAuth('recover')">忘记密码？</button>` : ''}
     <button class="auth-submit" onclick="handleAuthSubmit()">${isRegister ? '注册并登录' : '登录'}</button>
   </div>`;

@@ -19,6 +19,12 @@ class FrontendHtmlTests(unittest.TestCase):
         self.assertNotEqual(-1, render_pos)
         self.assertLess(define_pos, render_pos)
 
+    def test_instructor_login_does_not_display_default_password(self) -> None:
+        source = HTML_FILE.read_text(encoding="utf-8")
+
+        self.assertNotIn("teacher / meitai123456", source)
+        self.assertNotIn("默认密码：", source)
+
 
 if __name__ == "__main__":
     unittest.main()
