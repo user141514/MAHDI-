@@ -63,8 +63,9 @@ if errorlevel 1 (
 )
 
 echo.
-echo [3/4] 打开浏览器...
-start "" "%URL%"
+echo [3/4] 准备打开浏览器...
+echo 浏览器将在服务启动后自动打开；如果页面还没加载出来，等待几秒后刷新即可。
+start "" cmd /c "timeout /t 3 /nobreak >nul && start "" %URL%"
 
 echo.
 echo [4/4] 启动后端服务...
