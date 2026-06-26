@@ -564,6 +564,15 @@ function writeUsers(users) { writeJson(AUTH_USERS_KEY, users); }
 function readResults() { return readJson(AUTH_RESULTS_KEY, []); }
 function writeResults(results) { writeJson(AUTH_RESULTS_KEY, results); }
 function fieldValue(id) { return (document.getElementById(id)?.value || '').trim(); }
+function escHtml(value) {
+  return String(value ?? '').replace(/[&<>"']/g, ch => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  }[ch]));
+}
 function buildCreatePayload(email, pin, displayName, companyName, jobTitle) {
   return { email, pin, display_name: displayName, company_name: companyName, job_title: jobTitle, rq: fieldValue('authRecoveryQuestion'), ra: fieldValue('authRecoveryAnswer') };
 }
