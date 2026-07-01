@@ -46,6 +46,7 @@ body { font-family: 'Noto Sans SC', sans-serif; background: var(--bg); color: va
 .topbar-btn:hover { border-color: var(--purple); color: var(--purple); background: var(--purple-xlight); }
 .topbar-btn.primary { background: var(--purple); border-color: var(--purple); color: #fff; }
 .topbar-btn.primary:hover { background: var(--purple-mid); color: #fff; }
+.topbar-btn:disabled { opacity: .65; cursor: not-allowed; }
 
 .hero { padding: 44px 0 32px; text-align: center; }
 .hero-eyebrow { display: inline-flex; align-items: center; gap: 6px; background: var(--purple-light); border: 1px solid rgba(108,33,109,0.2); border-radius: 100px; padding: 5px 14px; font-size: 12px; color: var(--purple); font-weight: 500; margin-bottom: 18px; }
@@ -241,6 +242,8 @@ body { font-family: 'Noto Sans SC', sans-serif; background: var(--bg); color: va
     <span class="user-pill" id="userPill"></span>
     <button class="topbar-btn primary" id="authBtn" onclick="showAuth('login')">登录 / 注册</button>
     <button class="topbar-btn" id="instructorBtn" onclick="openInstructorEntry()">讲师入口</button>
+    <button class="topbar-btn" id="latestResultBtn" onclick="showLatestStoredResult()" style="display:none">最近报告</button>
+    <button class="topbar-btn" id="pdfBtn" onclick="exportLatestPdf()" style="display:none">导出PDF</button>
     <button class="topbar-btn" id="logoutBtn" onclick="logout()" style="display:none">退出</button>
   </div>
 </div>
@@ -551,7 +554,11 @@ function getDimMax(dim) {
   return mx;
 }
 
-function show(id) { document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on')); document.getElementById(id).classList.add('on'); }
+function show(id) {
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
+  document.getElementById(id).classList.add('on');
+  updatePdfButtonVisibility();
+}
 
 function readJson(key, fallback) { try { return JSON.parse(localStorage.getItem(key) || ''); } catch(e) { return fallback; } }
 function writeJson(key, value) { localStorage.setItem(key, JSON.stringify(value)); }
@@ -594,12 +601,16 @@ function renderTopbar() {
   const pill = document.getElementById('userPill');
   const authBtn = document.getElementById('authBtn');
   const instructorBtn = document.getElementById('instructorBtn');
+  const latestResultBtn = document.getElementById('latestResultBtn');
+  const pdfBtn = document.getElementById('pdfBtn');
   const logoutBtn = document.getElementById('logoutBtn');
-  if (!pill || !authBtn || !instructorBtn || !logoutBtn) return;
+  if (!pill || !authBtn || !instructorBtn || !latestResultBtn || !pdfBtn || !logoutBtn) return;
   if (!user) {
     pill.classList.remove('show');
     authBtn.style.display = 'inline-block';
     instructorBtn.textContent = '讲师入口';
+    latestResultBtn.style.display = 'none';
+    pdfBtn.style.display = 'none';
     logoutBtn.style.display = 'none';
     return;
   }
@@ -607,7 +618,77 @@ function renderTopbar() {
   pill.classList.add('show');
   authBtn.style.display = 'none';
   instructorBtn.textContent = user.role === 'instructor' ? '数据看板' : '讲师入口';
+  latestResultBtn.style.display = user.role === 'student' ? 'inline-block' : 'none';
   logoutBtn.style.display = 'inline-block';
+  updatePdfButtonVisibility();
+}
+
+function updatePdfButtonVisibility() {
+  const btn = document.getElementById('pdfBtn');
+  if (!btn) return;
+  const user = currentUser();
+  const onResult = document.getElementById('s-result')?.classList.contains('on');
+  btn.style.display = user && user.role === 'student' && onResult ? 'inline-block' : 'none';
+}
+
+async function exportLatestPdf() {
+  const token = currentToken();
+  const btn = document.getElementById('pdfBtn');
+  if (!token) { showAuth('login'); return; }
+  if (btn) { btn.disabled = true; btn.textContent = '生成中...'; }
+  try {
+    const resp = await fetch('/api/results/latest/pdf', {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    if (!resp.ok) {
+      let detail = 'PDF 导出失败，请稍后重试。';
+      try { detail = (await resp.json()).detail || detail; } catch(e) {}
+      throw new Error(detail);
+    }
+    const blob = await resp.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `MAHDI-report-${new Date().toISOString().slice(0,10)}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  } catch (err) {
+    alert(err.message || 'PDF 导出失败，请稍后重试。');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '导出PDF'; }
+    updatePdfButtonVisibility();
+  }
+}
+
+function showLatestStoredResult() {
+  const user = currentUser();
+  if (!user) { showAuth('login'); return; }
+  if (user.role !== 'student') { alert('讲师账号不能查看学生个人报告页。'); return; }
+  const latest = readResults()
+    .filter(r => r && (r.userId === user.id || r.email === user.email))
+    .sort((a,b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))[0];
+  if (!latest) {
+    alert('当前浏览器没有最近测评记录。请先完成一次测评，或换回保存过测评结果的浏览器。');
+    return;
+  }
+  if (!latest.final || !latest.dimNorm || !latest.sorted || !latest.stylePct) {
+    alert('最近测评记录不完整，无法还原报告页。');
+    return;
+  }
+  const kRate = Number(latest.kRate || 0);
+  document.getElementById('progBar').classList.remove('show');
+  showResult(
+    latest.final,
+    latest.dimNorm,
+    latest.sorted,
+    latest.level,
+    latest.warns || [],
+    kRate > 1 ? kRate / 100 : kRate,
+    latest.stylePct,
+    { skipSave: true }
+  );
 }
 
 function showAuth(mode='login') {
@@ -944,7 +1025,7 @@ function drawRadar(scores5d) {
 }
 
 // ===================== RESULT =====================
-function showResult(final, dimNorm, sorted, level, warns, kRate, stylePct) {
+function showResult(final, dimNorm, sorted, level, warns, kRate, stylePct, options = {}) {
   const mainType = sorted[0][0];
   const secondType = sorted[1][0];
   const info = TYPE_INFO[mainType];
@@ -967,7 +1048,7 @@ function showResult(final, dimNorm, sorted, level, warns, kRate, stylePct) {
 
   const styleSorted = Object.entries(stylePct).sort((a,b)=>b[1]-a[1]);
   const topStyle = styleSorted[0][0];
-  const savedRecord = saveAssessmentResult({ final, pcts, dimNorm, sorted, mainType, secondType, level, warns, kRate, stylePct, topStyle, isDouble });
+  const savedRecord = options.skipSave ? null : saveAssessmentResult({ final, pcts, dimNorm, sorted, mainType, secondType, level, warns, kRate, stylePct, topStyle, isDouble });
 
   const warnHTML = warns.length > 0 ? `
     <div class="warn-section">
