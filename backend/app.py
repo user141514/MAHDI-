@@ -5,12 +5,13 @@ import secrets
 from typing import Any, Dict, List, Optional
 from pathlib import Path
 
-from fastapi import FastAPI, Header, HTTPException
+from fastapi import FastAPI, Header, HTTPException, Response
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 
 from .account_api import router as account_router
 from .auth_local import TEACHER_ACCOUNT, TEACHER_PIN, ensure_teacher, now_iso, public_user
+from .pdf_export import render_result_pdf
 from .session_local import get_current, issue
 from .storage import connect, dump_json, init_db, load_json
 
@@ -94,6 +95,32 @@ def save_result(data: ResultIn, authorization: str = Header(default=None)) -> Di
     with connect() as conn:
         conn.execute("INSERT INTO results VALUES (?, ?, ?, ?)", (result_id, user_id, dump_json(payload), created_at))
     return {"result": payload}
+
+
+@app.get("/api/results/latest/pdf")
+def latest_result_pdf(authorization: str = Header(default=None)) -> Response:
+    current = get_current(authorization)
+    if current["role"] != "student":
+        raise HTTPException(403, "仅学员可导出个人测评报告。")
+    with connect() as conn:
+        row = conn.execute(
+            "SELECT payload FROM results WHERE user_id=? ORDER BY created_at DESC LIMIT 1",
+            (current["id"],),
+        ).fetchone()
+    if row is None:
+        raise HTTPException(404, "当前账号还没有可导出的测评结果。")
+    payload = load_json(row["payload"])
+    try:
+        pdf_bytes = render_result_pdf(payload)
+    except Exception as exc:
+        raise HTTPException(500, f"PDF生成失败：{type(exc).__name__}: {exc}") from exc
+    created_date = str(payload.get("createdAt") or "latest")[:10] or "latest"
+    filename = f"MAHDI-report-{created_date}.pdf"
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
 
 
 @app.get("/api/instructor/results")

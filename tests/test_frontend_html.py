@@ -25,6 +25,21 @@ class FrontendHtmlTests(unittest.TestCase):
         self.assertNotIn("teacher / meitai123456", source)
         self.assertNotIn("默认密码：", source)
 
+    def test_result_page_has_pdf_export_button_and_handler(self) -> None:
+        source = HTML_FILE.read_text(encoding="utf-8")
+
+        self.assertIn('id="pdfBtn"', source)
+        self.assertIn("function exportLatestPdf", source)
+        self.assertIn("/api/results/latest/pdf", source)
+
+    def test_has_temporary_latest_result_shortcut_without_resaving(self) -> None:
+        source = HTML_FILE.read_text(encoding="utf-8")
+
+        self.assertIn('id="latestResultBtn"', source)
+        self.assertIn("function showLatestStoredResult", source)
+        self.assertIn("skipSave", source)
+        self.assertIn("options.skipSave ? null : saveAssessmentResult", source)
+
 
 if __name__ == "__main__":
     unittest.main()
