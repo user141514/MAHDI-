@@ -35,7 +35,7 @@ python -m uvicorn backend.app:app --host 127.0.0.1 --port 8010 --reload
 http://localhost:8010
 ```
 
-## 默认讲师账号
+## 默认讲师账号（仅本地）
 
 ```text
 teacher
@@ -85,7 +85,13 @@ MAHDI_MAIL_SSL
 MAHDI_PUBLIC_BASE_URL
 ```
 
-未配置邮件服务时，后端会返回本地测试链接，便于开发调试。
+本地开发未配置邮件服务时，后端会返回测试链接，便于调试。`MAHDI_ENV=production` 时关闭此行为，邮件未配置则拒绝邮件重置申请。
+
+## 服务器部署
+
+采用本地构建 Linux amd64 Docker 镜像、导出打包、服务器导入后通过 Docker Compose 启动的方式。部署目录为 `/opt/MT-wuleirencaizhinengti`，端口为 `8901`；数据库单独持久化，生产讲师密码由服务器私密配置提供。新密码使用带盐哈希存储，旧本地账号在成功登录时自动升级。
+
+首次部署、更新前备份、验证和回滚命令见 [部署说明](docs/DEPLOYMENT.md)。
 
 ## 说明
 

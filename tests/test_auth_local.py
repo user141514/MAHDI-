@@ -6,6 +6,7 @@ from tempfile import TemporaryDirectory
 
 from backend import storage
 from backend.auth_local import TEACHER_ACCOUNT, TEACHER_PIN, ensure_teacher
+from backend.passwords import verify_password
 
 
 class EnsureTeacherTests(unittest.TestCase):
@@ -29,7 +30,8 @@ class EnsureTeacherTests(unittest.TestCase):
                     ).fetchone()
 
                 self.assertIsNotNone(row)
-                self.assertEqual(TEACHER_PIN, row["password_hash"])
+                self.assertNotEqual(TEACHER_PIN, row["password_hash"])
+                self.assertTrue(verify_password(TEACHER_PIN, row["password_hash"]))
                 self.assertIsNone(row["recovery_question"])
                 self.assertIsNone(row["reset_token"])
             finally:

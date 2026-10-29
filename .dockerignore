@@ -1,0 +1,9 @@
+*
+!Dockerfile
+!requirements.txt
+!backend/
+!backend/*.py
+!backend/*.json
+!MAHDI*.html
+backend/data/
+backend/__pycache__/
