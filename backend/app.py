@@ -100,7 +100,7 @@ def latest_result(authorization: str = Header(default=None)) -> Dict[str, Any]:
 def instructor_results(authorization: str = Header(default=None)) -> Dict[str, Any]:
     current = get_current(authorization)
     if current["role"] != "instructor":
-        raise HTTPException(403, "仅讲师可访问。")
+        raise HTTPException(403, "仅管理员可访问。")
     with connect() as conn:
         rows = conn.execute("SELECT * FROM results ORDER BY created_at DESC").fetchall()
     results = [load_json(row["payload"]) for row in rows]
@@ -119,7 +119,7 @@ def instructor_results(authorization: str = Header(default=None)) -> Dict[str, A
 def clear_results(authorization: str = Header(default=None)) -> Dict[str, bool]:
     current = get_current(authorization)
     if current["role"] != "instructor":
-        raise HTTPException(403, "仅讲师可访问。")
+        raise HTTPException(403, "仅管理员可访问。")
     with connect() as conn:
         conn.execute("DELETE FROM results")
         conn.execute("DELETE FROM assessment_selections")
@@ -161,7 +161,7 @@ def assessment_config() -> Dict[str, Any]:
 def select_assessment(data: SelectionIn, authorization: str = Header(default=None)) -> Dict[str, Any]:
     current = get_current(authorization)
     if current["role"] != "student":
-        raise HTTPException(403, "讲师账号不能填写测评。")
+        raise HTTPException(403, "管理员账号不能填写测评。")
     bank = load_assessment_bank()
     config = get_assessment_config()
     inherited = {}
@@ -203,7 +203,7 @@ def select_assessment(data: SelectionIn, authorization: str = Header(default=Non
 def evaluate_assessment(data: EvaluationIn, authorization: str = Header(default=None)) -> Dict[str, Any]:
     current = get_current(authorization)
     if current["role"] != "student":
-        raise HTTPException(403, "讲师账号不能提交测评。")
+        raise HTTPException(403, "管理员账号不能提交测评。")
     with connect() as conn:
         row = conn.execute("SELECT payload FROM assessment_selections WHERE id=? AND user_id=?", (data.selection_id, current["id"])).fetchone()
     if row is None:
@@ -247,7 +247,7 @@ def evaluate_assessment(data: EvaluationIn, authorization: str = Header(default=
 def assessment_version_stats(authorization: str = Header(default=None)) -> Dict[str, Any]:
     current = get_current(authorization)
     if current["role"] != "instructor":
-        raise HTTPException(403, "仅讲师可访问。")
+        raise HTTPException(403, "仅管理员可访问。")
     with connect() as conn:
         choices = conn.execute("SELECT id, payload FROM assessment_selections").fetchall()
         completed = {row["id"] for row in conn.execute("SELECT id FROM results").fetchall()}

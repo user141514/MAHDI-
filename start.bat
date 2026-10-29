@@ -17,14 +17,14 @@ echo.
 echo 项目目录: %cd%
 echo 访问地址: %URL%
 echo 数据文件: %DATA_FILE%
-echo 讲师账号: teacher
-echo 讲师密码: meitai123456
+echo 管理员账号: teacher
+echo 管理员密码: meitai123456
 echo.
 echo 测试建议:
 echo   1. 先注册一个学员账号
 echo   2. 完成一次测评并提交结果
-echo   3. 退出后用讲师账号登录
-echo   4. 进入讲师数据看板查看学员结果
+echo   3. 退出后用管理员账号登录
+echo   4. 进入管理员数据看板查看学员结果
 echo.
 echo 按 Ctrl+C 可以停止服务。
 echo ============================================================
@@ -54,7 +54,7 @@ if errorlevel 1 (
 )
 
 echo.
-echo [2/4] 初始化本地 SQLite 和默认讲师账号...
+echo [2/4] 初始化本地 SQLite 和默认管理员账号...
 python -c "from backend.storage import init_db; from backend.auth_local import ensure_teacher; init_db(); ensure_teacher(); print('database ready')"
 if errorlevel 1 (
   echo [错误] 数据库初始化失败。

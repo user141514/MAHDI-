@@ -250,7 +250,7 @@ body { font-family: Inter, 'Noto Sans SC', 'Microsoft YaHei', system-ui, sans-se
   <div class="topbar-actions">
     <span class="user-pill" id="userPill"></span>
     <button class="topbar-btn primary" id="authBtn" onclick="showAuth('login')">登录 / 注册</button>
-    <button class="topbar-btn" id="instructorBtn" onclick="openInstructorEntry()">讲师入口</button>
+    <button class="topbar-btn" id="instructorBtn" onclick="openInstructorEntry()">管理员入口</button>
     <button class="topbar-btn" id="latestResultBtn" onclick="showLatestStoredResult()" style="display:none">最近报告</button>
     <button class="topbar-btn" id="pdfBtn" onclick="exportLatestPdf()" style="display:none">导出PDF</button>
     <button class="topbar-btn" id="logoutBtn" onclick="logout()" style="display:none">退出</button>
@@ -321,12 +321,12 @@ body { font-family: Inter, 'Noto Sans SC', 'Microsoft YaHei', system-ui, sans-se
     <div class="auth-card">
       <div class="auth-head">
         <div class="auth-title" id="authTitle">用户登录</div>
-        <div class="auth-sub" id="authSub">登录后开始测评，结果将自动归档，讲师可查看班级测评数据。</div>
+        <div class="auth-sub" id="authSub">登录后开始测评，结果将自动归档，管理员可查看班级测评数据。</div>
       </div>
       <div class="auth-tabs">
         <button class="auth-tab" id="tabLogin" onclick="switchAuth('login')">用户登录</button>
         <button class="auth-tab" id="tabRegister" onclick="switchAuth('register')">用户注册</button>
-        <button class="auth-tab" id="tabInstructor" onclick="switchAuth('instructor')">讲师登录</button>
+        <button class="auth-tab" id="tabInstructor" onclick="switchAuth('instructor')">管理员登录</button>
         <button class="auth-tab" id="tabRecover" onclick="switchAuth('recover')">找回密码</button>
       </div>
       <div class="auth-error" id="authError"></div>
@@ -399,7 +399,7 @@ let currentResult = null, dashboardRecords = [];
 const AUTH_USERS_KEY = 'mahid_users_v1';
 const AUTH_SESSION_KEY = 'mahid_session_v1';
 const AUTH_RESULTS_KEY = 'mahid_results_v1';
-const DEFAULT_INSTRUCTOR = { email:'teacher', password:'meitai123456', displayName:'讲师' };
+const DEFAULT_INSTRUCTOR = { email:'teacher', password:'meitai123456', displayName:'管理员' };
 ensureInstructorAccount();
 renderTopbar();
 
@@ -477,7 +477,7 @@ function setSession(user, accessToken) { writeJson(AUTH_SESSION_KEY, { userId:us
 function ensureInstructorAccount() {
   const users = readUsers();
   if (!users.some(u => u.role === 'instructor' && u.email === DEFAULT_INSTRUCTOR.email)) {
-    users.push({ id:'teacher', email:DEFAULT_INSTRUCTOR.email, passwordHash:hashPassword(DEFAULT_INSTRUCTOR.password), displayName:DEFAULT_INSTRUCTOR.displayName, companyName:'美太咨询', jobTitle:'讲师', role:'instructor', createdAt:new Date().toISOString() });
+    users.push({ id:'teacher', email:DEFAULT_INSTRUCTOR.email, passwordHash:hashPassword(DEFAULT_INSTRUCTOR.password), displayName:DEFAULT_INSTRUCTOR.displayName, companyName:'美太咨询', jobTitle:'管理员', role:'instructor', createdAt:new Date().toISOString() });
     writeUsers(users);
   }
 }
@@ -494,16 +494,17 @@ function renderTopbar() {
   if (!user) {
     pill.classList.remove('show');
     authBtn.style.display = 'inline-block';
-    instructorBtn.textContent = '讲师入口';
+    instructorBtn.textContent = '管理员入口';
     latestResultBtn.style.display = 'none';
     pdfBtn.style.display = 'none';
     logoutBtn.style.display = 'none';
     return;
   }
-  pill.textContent = `${user.role === 'instructor' ? '讲师' : '用户'}：${user.displayName || user.email}`;
+  const displayName=user.role==='instructor'&&user.displayName==='讲师'?'管理员':user.displayName;
+  pill.textContent = `${user.role === 'instructor' ? '管理员' : '用户'}：${displayName || user.email}`;
   pill.classList.add('show');
   authBtn.style.display = 'none';
-  instructorBtn.textContent = user.role === 'instructor' ? '数据看板' : '讲师入口';
+  instructorBtn.textContent = user.role === 'instructor' ? '数据看板' : '管理员入口';
   latestResultBtn.style.display = user.role === 'student' ? 'inline-block' : 'none';
   logoutBtn.style.display = 'inline-block';
   updatePdfButtonVisibility();
@@ -577,11 +578,11 @@ function clearAuthError() { const box=document.getElementById('authError'); box.
 
 function renderAuthForm() {
   clearAuthError();
-  const titleMap = { login:'用户登录', register:'用户注册', instructor:'讲师登录', recover:'找回密码' };
+  const titleMap = { login:'用户登录', register:'用户注册', instructor:'管理员登录', recover:'找回密码' };
   const subMap = {
     login:'登录后开始测评，结果将自动归档到你的账号下。',
     register:'注册普通用户账号后，建议设置找回问题，便于后续重置密码。',
-    instructor:'请输入讲师账号和密码登录。',
+    instructor:'请输入管理员账号和密码登录。',
     recover:'先输入注册账号，系统会显示你注册时设置的问题。回答正确后即可设置新密码。'
   };
   document.getElementById('authTitle').textContent = titleMap[authMode];
@@ -598,15 +599,15 @@ function renderAuthForm() {
       <div class="auth-field"><label>邮箱/账号</label><input id="recoverEmail" autocomplete="username" placeholder="请输入注册账号"></div>
       <button class="auth-submit" onclick="requestRecoverQuestion()">下一步：查看找回问题</button>
       <div id="recoverArea"></div>
-      <div class="auth-note">如果注册时没有设置找回问题，请联系讲师协助处理。</div>
+      <div class="auth-note">如果注册时没有设置找回问题，请联系管理员协助处理。</div>
     </div>`;
     return;
   }
   body.innerHTML = `<div class="auth-form">
     ${isRegister ? `<div class="auth-grid"><div class="auth-field"><label>姓名</label><input id="authName" autocomplete="name" placeholder="请输入姓名"></div><div class="auth-field"><label>公司</label><input id="authCompany" placeholder="请输入公司/组织"></div></div><div class="auth-field"><label>岗位</label><input id="authJob" placeholder="请输入岗位/职务"></div><div class="auth-note">建议设置一个找回问题。以后忘记密码时，可用它验证身份；不填写也可以继续注册。</div><div class="auth-field"><label>找回问题（选填）</label><input id="authRecoveryQuestion" placeholder="例如：你的第一个独立项目名称是？"></div><div class="auth-field"><label>找回答案（选填）</label><input id="authRecoveryAnswer" placeholder="请填写自己容易记住的答案"></div>` : ''}
-    <div class="auth-field"><label>${isInstructor ? '讲师账号' : '邮箱/账号'}</label><input id="authEmail" autocomplete="username" value="${emailValue}" placeholder="${isInstructor ? 'teacher' : '请输入邮箱或账号'}"></div>
+    <div class="auth-field"><label>${isInstructor ? '管理员账号' : '邮箱/账号'}</label><input id="authEmail" autocomplete="username" value="${emailValue}" placeholder="${isInstructor ? 'teacher' : '请输入邮箱或账号'}"></div>
     <div class="auth-field"><label>密码</label><input id="authPassword" type="password" autocomplete="current-password" placeholder="请输入密码" onkeydown="if(event.key==='Enter')handleAuthSubmit()"></div>
-    ${isInstructor ? `<div class="auth-note">讲师可以查看本浏览器中所有用户提交的测评结果。</div>` : ''}
+    ${isInstructor ? `<div class="auth-note">管理员可以查看本浏览器中所有用户提交的测评结果。</div>` : ''}
     ${authMode === 'login' ? `<button class="topbar-btn" type="button" onclick="switchAuth('recover')">忘记密码？</button>` : ''}
     <button class="auth-submit" onclick="handleAuthSubmit()">${isRegister ? '注册并登录' : '登录'}</button>
   </div>`;
@@ -709,7 +710,7 @@ function logout() {
 function requireStudentSession() {
   const user = currentUser();
   if (!user || !currentToken()) { showAuth('login'); return false; }
-  if (user.role === 'instructor') { alert('讲师账号用于查看数据看板，不能填写用户测评。'); showInstructorDashboard(); return false; }
+  if (user.role === 'instructor') { alert('管理员账号用于查看数据看板，不能填写用户测评。'); showInstructorDashboard(); return false; }
   return true;
 }
 
@@ -826,12 +827,12 @@ async function compute(){
 }
 
 // ===================== RADAR CHART =====================
-function drawRadar(scores5d) {
+function drawRadar(scores5d, mainType=null) {
   const size=220, cx=110, cy=110, r=80;
   const dims=['E','K','I','L','P'];
   const labels=['经验经历','AI知识','兴趣倾向','学习方式','发展潜能'];
   const angles=dims.map((_,i)=>((i*72)-90)*Math.PI/180);
-  const vals=dims.map(d=>{ const s=scores5d[d]||{}; const mx=Math.max(0,...Object.values(s).map(Number).filter(Number.isFinite)); return Math.max(0,Math.min(1,mx/100)); });
+  const vals=dims.map(d=>{ const s=scores5d[d]||{}; const value=mainType?Number(s[mainType])||0:Math.max(0,...Object.values(s).map(Number).filter(Number.isFinite)); return Math.max(0,Math.min(1,value/100)); });
   function pt(angle,frac,rr){return{x:cx+rr*frac*Math.cos(angle),y:cy+rr*frac*Math.sin(angle)};}
 
   let grid='';
@@ -876,6 +877,8 @@ function showResult(record) {
   const leading=result.leadingType||result.mainType||result.sorted?.[0]?.[0]||'M';
   const info=TYPE_INFO[leading]||TYPE_INFO.M;
   const mixed=Boolean(result.is_mixed);
+  const radarType=!mixed&&TYPE_INFO[result.mainType]?result.mainType:null;
+  const radarTitle=radarType?`${result.mainTypeName||TYPE_INFO[radarType].name}五维倾向得分`:`五维倾向参考得分${mixed?'（复合型 / 待观察）':''}`;
   const title=result.conclusion||(result.mainTypeName||info.name)+(result.isDouble&&result.secondTypeName?' × '+result.secondTypeName:'');
   const reason=result.conclusion_reason||(mixed?'前两类得分接近，建议结合更多经历继续观察。':info.desc);
   const strength=result.tendency_strength||'历史记录未计算倾向强度';
@@ -892,8 +895,8 @@ function showResult(record) {
       ${result.version==='full'&&!mixed&&result.secondTypeName?`<div class="secondary-tag">辅助倾向：${escHtml(result.secondTypeName)}</div>`:''}</div></div>
     ${result.version==='full'?`<div class="transform-bar">${mixed?'可探索方向':'转型方向'}：${escHtml(info.transform)}</div>`:''}
   </section>`;
-  const scores=`<section class="scores-section" data-report-block="scores"><div class="sec-title">五类人才${scoreUnit(result)==='分'?'倾向得分':'匹配占比'}</div>
-    <div class="radar-wrap">${result.version==='full'?`<div class="radar-chart">${drawRadar(result.dimNorm||{})}<div class="auth-note">经验、知识、兴趣、学习、潜能五维图</div></div>`:''}<div class="score-bars-col">${scoreBars(result)}</div></div>
+  const scores=`<section class="scores-section" data-report-block="scores">
+    <div class="radar-wrap">${result.version==='full'?`<div class="radar-chart"><div class="sec-title">${escHtml(radarTitle)}</div>${drawRadar(result.dimNorm||{},radarType)}<div class="auth-note">经验、知识、兴趣、学习、潜能五维图</div></div>`:''}<div class="score-bars-col"><div class="sec-title">五类人才${scoreUnit(result)==='分'?'倾向得分':'匹配占比'}</div>${scoreBars(result)}</div></div>
     <div class="auth-note">${scoreUnit(result)==='分'?'各类独立计分，分数无需合计为100。':'各类型占比合计约100%，沿用旧算法。'}</div></section>`;
   const featureBlock=`<section class="scores-section" data-report-block="features"><div class="sec-title">${result.version==='lite'?'3个':'5个'}核心特征</div><ul class="report-features">${features.map(feature=>`<li>${escHtml(feature)}</li>`).join('')}</ul></section>`;
   let content=conclusion+scores;
@@ -947,7 +950,7 @@ async function renderInstructorDashboard() {
     const counts=results.reduce((all,r)=>{const key=r.is_mixed?'mixed':r.mainType;all[key]=(all[key]||0)+1;return all;},{});
     const most=Object.entries(counts).sort((a,b)=>b[1]-a[1])[0]?.[0];
     const mostName=most==='mixed'?'复合型 / 待观察':TYPE_INFO[most]?.name||'—';
-    container.innerHTML=`<div class="instructor-top"><div><div class="instructor-title">讲师数据看板</div><div class="instructor-sub">查看已保存的学员测评、精简版与完整版的选择情况。</div></div>
+    container.innerHTML=`<div class="instructor-top"><div><div class="instructor-title">管理员数据看板</div><div class="instructor-sub">查看已保存的学员测评、精简版与完整版的选择情况。</div></div>
       <div class="instructor-actions"><button class="topbar-btn" onclick="show('s-welcome')">返回首页</button><button class="topbar-btn" onclick="exportInstructorCsv()" ${results.length?'':'disabled'}>导出CSV</button><button class="topbar-btn" onclick="clearAssessmentResults()" ${results.length?'':'disabled'}>清空记录</button></div></div>
       <div class="dashboard-stats"><div class="dash-stat"><div class="dash-num">${users.length}</div><div class="dash-label">已提交学员</div></div><div class="dash-stat"><div class="dash-num">${results.length}</div><div class="dash-label">测评记录</div></div><div class="dash-stat"><div class="dash-num">${escHtml(mostName)}</div><div class="dash-label">最多人才倾向</div></div><div class="dash-stat"><div class="dash-num">${avgK}%</div><div class="dash-label">平均AI知识正确率</div></div></div>
       <section class="scores-section"><div class="sec-title">版本选择比例</div><div class="auth-note">共${stats.total_selections}次选择；统计已选择但尚未完成的测评，完整版包含精简版升级。</div><div class="dashboard-stats">${['lite','full'].map(version=>{const item=stats.versions[version];return `<div class="dash-stat"><div class="dash-num">${Math.round(item.share*100)}%</div><div class="dash-label">${versionLabel(version)} · 选择${item.selections}次 · 完成${item.completed}次</div></div>`;}).join('')}</div></section>

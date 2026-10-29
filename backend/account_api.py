@@ -89,7 +89,7 @@ def recover_question(data: EmailReq) -> Dict[str, Any]:
     with connect() as conn:
         row = conn.execute("SELECT email, recovery_question FROM users WHERE email=? AND role='student'", (email,)).fetchone()
     if row is None or not row["recovery_question"]:
-        raise HTTPException(404, "该账号未设置找回问题，请联系讲师。")
+        raise HTTPException(404, "该账号未设置找回问题，请联系管理员。")
     return {"email": row["email"], "recoveryQuestion": row["recovery_question"]}
 
 

@@ -139,6 +139,31 @@ assert.ok(requests.some(r=>r.url==='/api/results/latest'));
 assert.ok(elements.get('s-result').innerHTML.includes('当前AI知识水位'));
 """)
 
+    def test_full_radar_title_and_values_use_saved_main_type(self) -> None:
+        run_browser_script(r"""
+TYPE_INFO=bank.types;
+const result=savedResult({version:'full',mainType:'A',mainTypeName:bank.types.A.name,leadingType:'M',is_mixed:false,
+  dimNorm:{E:{A:11,M:91},K:{A:22,M:92},I:{A:33,M:93},L:{A:44,M:94},P:{A:55,M:95}}});
+const original=JSON.stringify(result);
+showResult(result);
+const page=elements.get('s-result').innerHTML;
+assert.ok(page.includes('AI赋能者五维倾向得分'));
+for(const value of [11,22,33,44,55])assert.ok(page.includes('>'+value+'%</text>'));
+assert.ok(!page.includes('>91%</text>'));
+assert.equal(JSON.stringify(result),original);
+""")
+
+    def test_mixed_radar_keeps_reference_title_and_does_not_claim_a_main_type(self) -> None:
+        run_browser_script(r"""
+TYPE_INFO=bank.types;
+showResult(savedResult({version:'full',mainType:'A',mainTypeName:bank.types.A.name,is_mixed:true,
+  dimNorm:{E:{A:11,M:91},K:{A:22,M:92},I:{A:33,M:93},L:{A:44,M:94},P:{A:55,M:95}}}));
+const page=elements.get('s-result').innerHTML;
+assert.ok(page.includes('五维倾向参考得分（复合型 / 待观察）'));
+assert.ok(!page.includes('AI赋能者五维倾向得分'));
+assert.ok(page.includes('>91%</text>'));
+""")
+
     def test_instructor_reads_server_statistics_and_handles_mixed_result(self) -> None:
         run_browser_script(r"""
 currentUser=()=>({id:'teacher-1',role:'instructor'});

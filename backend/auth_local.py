@@ -19,9 +19,9 @@ def public_user(row) -> Dict[str, Any]:
     return {
         "id": row["id"],
         "email": row["email"],
-        "displayName": row["display_name"],
+        "displayName": "管理员" if row["role"] == "instructor" and row["display_name"] == "讲师" else row["display_name"],
         "companyName": row["company_name"] or "",
-        "jobTitle": row["job_title"] or "",
+        "jobTitle": "管理员" if row["role"] == "instructor" and row["job_title"] == "讲师" else row["job_title"] or "",
         "role": row["role"],
         "createdAt": row["created_at"],
     }
@@ -33,7 +33,7 @@ def ensure_teacher() -> None:
         if row is None:
             conn.execute(
                 "INSERT INTO users (id, email, password_hash, display_name, company_name, job_title, role, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-                ("teacher", TEACHER_ACCOUNT, TEACHER_PIN, "讲师", "美太咨询", "讲师", "instructor", now_iso()),
+                ("teacher", TEACHER_ACCOUNT, TEACHER_PIN, "管理员", "美太咨询", "管理员", "instructor", now_iso()),
             )
 
 

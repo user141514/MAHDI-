@@ -178,6 +178,23 @@ class LatestResultPdfTests(unittest.TestCase):
         self.assertIn("复合型 / 待观察", html)
         self.assertIn("多个类型接近，请结合真实项目继续观察。", html)
 
+    def test_full_radar_title_and_values_use_saved_main_type(self) -> None:
+        result = sample_result("A")
+        result.update(mainTypeName="AI赋能者", leadingType="M", is_mixed=False)
+        result["dimNorm"] = {dim: {"A": value, "M": 90 + index} for index, (dim, value) in enumerate(zip("EKILP", (11, 22, 33, 44, 55)))}
+        self.assertEqual(pdf_export.dim_scores(result), dict(zip("EKILP", (11, 22, 33, 44, 55))))
+        html = pdf_export.build_report_html(result)
+        self.assertIn("AI赋能者五维倾向得分", html)
+
+    def test_mixed_radar_preserves_reference_values_and_neutral_title(self) -> None:
+        result = sample_result("A")
+        result.update(mainTypeName="AI赋能者", is_mixed=True)
+        result["dimNorm"] = {dim: {"A": 11, "M": 91} for dim in "EKILP"}
+        self.assertEqual(pdf_export.dim_scores(result), dict.fromkeys("EKILP", 91))
+        html = pdf_export.build_report_html(result)
+        self.assertIn("五维倾向参考得分（复合型 / 待观察）", html)
+        self.assertNotIn("AI赋能者五维倾向得分", html)
+
 
 if __name__ == "__main__":
     unittest.main()

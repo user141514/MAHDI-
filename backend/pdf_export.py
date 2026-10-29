@@ -185,11 +185,12 @@ def sorted_types(result: Dict[str, Any], pcts: Dict[str, int]) -> List[Tuple[str
 
 def dim_scores(result: Dict[str, Any]) -> Dict[str, int]:
     dim_norm = result.get("dimNorm") or {}
+    main_type = result.get("mainType") if not result.get("is_mixed") and result.get("mainType") in TYPE_INFO else None
     scores: Dict[str, int] = {}
     for key in DIM_LABELS:
         item = dim_norm.get(key, 0) if isinstance(dim_norm, dict) else 0
         if isinstance(item, dict) and item:
-            scores[key] = clamp_pct(max(as_number(value) for value in item.values()))
+            scores[key] = clamp_pct(item.get(main_type, 0) if main_type else max(as_number(value) for value in item.values()))
         else:
             scores[key] = clamp_pct(item)
     return scores
@@ -390,6 +391,7 @@ def build_report_html(result: Dict[str, Any]) -> str:
     top_style_name = result.get("topStyleName") or STYLE_INFO.get(top_style, {}).get("name") or "未识别"
     title = result.get("conclusion") or f"{info['name']} × {second_info.get('name', '')}".strip(" ×")
     mixed = result.get("is_mixed", False)
+    radar_title = f"{result.get('mainTypeName') or TYPE_INFO[result['mainType']]['name']}五维倾向得分" if not mixed and result.get("mainType") in TYPE_INFO else "五维倾向参考得分" + ("（复合型 / 待观察）" if mixed else "")
     unit = "分" if result.get("score_kind") == "standardized_score" else "%"
     description = result.get("conclusion_reason") if mixed else info.get("desc")
     features = result.get("core_features") or []
@@ -481,7 +483,7 @@ h1 {{ margin: 0 0 3px; font-size: 23px; color: {info['color']}; line-height: 1.2
 
   <div class="grid">
     <section class="section">
-      <div class="section-title">五维能力雷达图</div>
+      <div class="section-title">{text(radar_title)}</div>
       <div class="radar-wrap">{radar_svg(dim_scores(result))}</div>
     </section>
     <section class="section">
